@@ -11,9 +11,19 @@ import * as zod from 'zod/v4/core'
  * Column values are stored in one of these formats, and SQLite performs
  * type conversions as needed during operations.
  *
- * @see https://www.sqlite.org/datatype3.html
+ * @see https://www.sqlite.org/datatype3.html#storage_classes_and_datatypes
  */
 export type SQLiteType = 'TEXT' | 'INTEGER' | 'REAL' | 'BLOB' | 'NULL'
+
+/**
+ * SQLite supported column types.
+ *
+ * These types are supported by SQLite but not as native storage classes.
+ * They are often used as aliases for other types or for specific purposes.
+ *
+ * @see https://www.sqlite.org/datatype3.html#type_affinity
+ */
+export type SQLiteSupportType = 'BOOLEAN' | 'BIGINT' | 'DATE' | 'DATETIME' | 'NUMERIC' | 'FLOAT'
 
 // ============================================================================
 // Foreign Key Constraints
