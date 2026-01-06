@@ -28,8 +28,8 @@ export function createTable(config: TableConfig) {
   const zodSchema = buildZodSchema(columns)
 
   return {
-    createTable: createTableSQL,
-    createIndexes: createIndexesSQL,
+    table: createTableSQL,
+    indexes: createIndexesSQL,
     schema: zodSchema,
   }
 }
