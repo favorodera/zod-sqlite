@@ -1,10 +1,20 @@
 import type { SQLiteSupportType, SQLiteType } from '../types'
 import * as zod from 'zod/v4/core'
 
+/**
+ * Maps a Zod type to an SQLite column type.
+ *
+ * analyzes the Zod schema type and optionally its format (e.g., z.string().email())
+ * to determine the most appropriate SQLite storage class or supported type.
+ *
+ * @param zodType - Zod type string (e.g., 'string', 'number')
+ * @param schema - The actual Zod schema instance
+ * @returns SQLite column type
+ */
 export function mapZodTypeToSQLite(zodType: zod.$ZodTypes['_zod']['def']['type'], schema: zod.$ZodType): SQLiteType | SQLiteSupportType {
   switch (zodType) {
 
-    case 'string':{
+    case 'string': {
 
       const format = (schema as zod.$ZodStringFormat)._zod.def.format as zod.$ZodStringFormats
 
@@ -14,10 +24,10 @@ export function mapZodTypeToSQLite(zodType: zod.$ZodTypes['_zod']['def']['type']
 
         case 'datetime':
           return 'DATETIME'
-        
+
         case 'duration':
           return 'INTEGER'
-      
+
         default:
           return 'TEXT'
       }
