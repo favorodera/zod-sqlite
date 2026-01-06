@@ -1,10 +1,11 @@
 import { buildColumnDefinition } from './column-definitions'
 import { buildIndexStatements } from './index-statements'
 import { buildPrimaryKeyConstraint } from './primary-key-constraint'
-import type { TableConfig } from '../types'
+import type { ColumnConfig, TableConfig } from '../types'
 import { buildZodSchema } from './zod-schema'
 
-export function createTable(config: TableConfig) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createTable<const TColumns extends readonly ColumnConfig<any, any>[]>(config: TableConfig<TColumns>) {
   const { name, columns, primaryKeys, indexes } = config
 
   // Build column definitions
