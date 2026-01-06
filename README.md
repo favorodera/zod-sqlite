@@ -41,7 +41,7 @@ This tool bridges the gap between Zod schemas and SQLite database definitions. I
 ## Installation
 
 ```bash
-npm install zod-to-sqlite
+npm install zod-sqlite
 ```
 
 Requires Zod v4 as a peer dependency:
@@ -55,7 +55,7 @@ npm install zod@^4.0.0
 Here's a simple example creating a users table:
 
 ```typescript
-import { createTable } from 'zod-to-sqlite'
+import { createTable } from 'zod-sqlite'
 import { z } from 'zod'
 
 const users = createTable({
