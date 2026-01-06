@@ -1,5 +1,5 @@
 {
-  "name": "zod-sql",
+  "name": "zod-sqlite",
   "version": "1.0.0",
   "description": "Your package description",
   "author": "Your Name <your.email@example.com>",
