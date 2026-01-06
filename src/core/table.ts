@@ -4,6 +4,18 @@ import { buildPrimaryKeyConstraint } from './primary-key-constraint'
 import type { ColumnConfig, TableConfig } from '../types'
 import { buildZodSchema } from './zod-schema'
 
+/**
+ * Creates a table definition and Zod schema.
+ *
+ * This function is the main entry point for defining a table. It takes a configuration object
+ * and returns:
+ * 1. `table`: SQL CREATE TABLE statement
+ * 2. `indexes`: Array of SQL CREATE INDEX statements
+ * 3. `schema`: Zod object schema matching the table structure
+ *
+ * @param config - Table configuration object
+ * @returns Object containing SQL statements and Zod schema
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createTable<const TColumns extends readonly ColumnConfig<any, any>[]>(config: TableConfig<TColumns>) {
   const { name, columns, primaryKeys, indexes } = config
