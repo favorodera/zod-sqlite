@@ -280,7 +280,16 @@ export type IndexConfig = {
  *   schema: z.enum(['draft', 'published']).default('draft')
  * }
  */
-export type ColumnConfig = {
+/**
+ * Database column configuration.
+ *
+ * Defines a single column in a table, including its name, type (via Zod schema),
+ * validation rules, and optional constraints like uniqueness and foreign keys.
+ *
+ * @template TName - Literal string type for the column name
+ * @template TSchema - Zod type for the column schema
+ */
+export type ColumnConfig<TName extends string = string, TSchema extends zod.$ZodType = zod.$ZodType> = {
   /**
    * Name of the column.
    *
@@ -290,7 +299,7 @@ export type ColumnConfig = {
    * @example 'user_id'
    * @example 'created_at'
    */
-  name: string
+  name: TName
 
   /**
    * Zod schema defining the column's type, validation, and constraints.
@@ -316,7 +325,7 @@ export type ColumnConfig = {
    * @example z.string().nullable() - TEXT column that allows NULL
    * @example z.boolean().default(false) - INTEGER with DEFAULT 0
    */
-  schema: zod.$ZodType
+  schema: TSchema
 
   /**
    * Whether column values must be unique across all rows.
@@ -370,83 +379,12 @@ export type ColumnConfig = {
   references?: ForeignKeyReference
 }
 
-// ============================================================================
-// Table Configuration
-// ============================================================================
-
 /**
  * Complete database table configuration.
- *
- * Defines the entire structure of a table including:
- * - Table name
- * - Column definitions with types and constraints
- * - Primary key (single column or composite)
- * - Optional indexes for query optimization
- *
- * This configuration is used to generate CREATE TABLE statements and provide
- * type safety for queries and mutations.
- *
- * **Design considerations:**
- * - Every table should have a primary key
- * - Use composite primary keys for junction tables (many-to-many relationships)
- * - Add indexes on foreign keys and frequently queried columns
- * - Keep table schemas focused and normalized
- *
- * @example
- * // Simple table with auto-increment ID
- * {
- *   name: 'users',
- *   columns: [
- *     { name: 'id', schema: z.number().int() },
- *     { name: 'email', schema: z.string().email(), unique: true },
- *     { name: 'name', schema: z.string() }
- *   ],
- *   primaryKey: 'id',
- *   indexes: [
- *     { name: 'idx_users_email', columns: ['email'] }
- *   ]
- * }
- *
- * @example
- * // Junction table with composite primary key
- * {
- *   name: 'user_roles',
- *   columns: [
- *     {
- *       name: 'user_id',
- *       schema: z.number().int(),
- *       references: { table: 'users', column: 'id', onDelete: 'CASCADE' }
- *     },
- *     {
- *       name: 'role_id',
- *       schema: z.number().int(),
- *       references: { table: 'roles', column: 'id', onDelete: 'CASCADE' }
- *     }
- *   ],
- *   primaryKey: ['user_id', 'role_id']
- * }
- *
- * @example
- * // Table with partial index
- * {
- *   name: 'posts',
- *   columns: [
- *     { name: 'id', schema: z.number().int() },
- *     { name: 'title', schema: z.string() },
- *     { name: 'status', schema: z.enum(['draft', 'published']) },
- *     { name: 'created_at', schema: z.date() }
- *   ],
- *   primaryKey: 'id',
- *   indexes: [
- *     {
- *       name: 'idx_published_posts',
- *       columns: ['created_at'],
- *       where: 'status = "published"'
- *     }
- *   ]
- * }
  */
-export type TableConfig = {
+export type TableConfig<
+  TColumns extends readonly ColumnConfig<string, zod.$ZodType>[] = readonly ColumnConfig<string, zod.$ZodType>[],
+> = {
   /**
    * Name of the table.
    *
@@ -484,7 +422,7 @@ export type TableConfig = {
    *   { name: 'created_at', schema: z.date().default(new Date()) }
    * ]
    */
-  columns: ColumnConfig[]
+  columns: TColumns
 
   /**
    * Column name(s) that form the primary key.
@@ -515,7 +453,7 @@ export type TableConfig = {
    * @example ['tenant_id', 'record_id'] - composite key for multi-tenant data
    * @example ['country_code', 'postal_code'] - composite key for location data
    */
-  primaryKeys: string[]
+  primaryKeys: ReadonlyArray<TColumns[number]['name']>
 
   /**
    * Optional array of index configurations for query optimization.
