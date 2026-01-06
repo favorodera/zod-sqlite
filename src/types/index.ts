@@ -250,7 +250,7 @@ export type IndexConfig = {
  * // Simple text column
  * {
  *   name: 'email',
- *   schema: z.string().email()
+ *   schema: z.email()
  * }
  *
  * @example
@@ -265,7 +265,7 @@ export type IndexConfig = {
  * // Foreign key column
  * {
  *   name: 'author_id',
- *   schema: z.number().int(),
+ *   schema: z.int(),
  *   references: {
  *     table: 'users',
  *     column: 'id',
@@ -321,7 +321,7 @@ export type ColumnConfig<TName extends string = string, TSchema extends zod.$Zod
    * - `.min()`, `.max()`, `.email()`, etc. → runtime validation only
    *
    * @example z.string() - TEXT column
-   * @example z.number().int() - INTEGER column
+   * @example z.int() - INTEGER column
    * @example z.string().nullable() - TEXT column that allows NULL
    * @example z.boolean().default(false) - INTEGER with DEFAULT 0
    */
@@ -344,7 +344,7 @@ export type ColumnConfig<TName extends string = string, TSchema extends zod.$Zod
    * // Unique email address
    * {
    *   name: 'email',
-   *   schema: z.string().email(),
+   *   schema: z.email(),
    *   unique: true
    * }
    */
@@ -368,7 +368,7 @@ export type ColumnConfig<TName extends string = string, TSchema extends zod.$Zod
    * @example
    * {
    *   name: 'user_id',
-   *   schema: z.number().int(),
+   *   schema: z.int(),
    *   references: {
    *     table: 'users',
    *     column: 'id',
@@ -417,8 +417,8 @@ export type TableConfig<
    *
    * @example
    * [
-   *   { name: 'id', schema: z.number().int() },
-   *   { name: 'email', schema: z.string().email() },
+   *   { name: 'id', schema: z.int() },
+   *   { name: 'email', schema: z.email() },
    *   { name: 'created_at', schema: z.date().default(new Date()) }
    * ]
    */
