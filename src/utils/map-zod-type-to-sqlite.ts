@@ -4,7 +4,7 @@ import * as zod from 'zod/v4/core'
 /**
  * Maps a Zod type to an SQLite column type.
  *
- * analyzes the Zod schema type and optionally its format (e.g., z.string().email())
+ * analyzes the Zod schema type and optionally its format (e.g., z.email())
  * to determine the most appropriate SQLite storage class or supported type.
  *
  * @param zodType - Zod type string (e.g., 'string', 'number')
