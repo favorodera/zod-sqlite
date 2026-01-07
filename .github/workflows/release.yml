@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - alpha
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -38,10 +39,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          version: pnpm ci:version
-          publish: pnpm ci:publish
-          title: "chore: release new versions"
-          commit: "chore: update versions and changelogs"
+          publish: pnpm changeset publish --tag ${{ github.ref_name == 'alpha' && 'alpha' || 'latest' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
