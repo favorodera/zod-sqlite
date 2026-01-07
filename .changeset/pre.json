@@ -4,5 +4,7 @@
   "initialVersions": {
     "zod-sqlite": "0.1.0-alpha.3"
   },
-  "changesets": []
+  "changesets": [
+    "better-ways-carry"
+  ]
 }
