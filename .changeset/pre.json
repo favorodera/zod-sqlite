@@ -4,5 +4,7 @@
   "initialVersions": {
     "zod-sqlite": "1.0.0-alpha.1"
   },
-  "changesets": []
+  "changesets": [
+    "giant-feet-glow"
+  ]
 }
