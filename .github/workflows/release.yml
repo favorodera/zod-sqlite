@@ -17,14 +17,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout repo
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Setup pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.26.1
 
+      # Setup Node
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -32,17 +35,21 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
+      # Install dependencies
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Build project
       - name: Build
         run: pnpm build
 
+      # Configure npm authentication
       - name: Configure npm auth
         run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      # Pre-release publishing (alpha/beta)
       - name: Publish (prerelease branches)
         if: github.ref_name != 'main'
         uses: changesets/action@v1
@@ -52,6 +59,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      # Exit pre-release mode for main branch
+      - name: Exit pre-release mode (if any)
+        if: github.ref_name == 'main'
+        run: pnpm dlx @changesets/cli pre exit || echo "No pre-release active"
+
+      # Publish stable release (main branch)
       - name: Publish (main / stable)
         if: github.ref_name == 'main'
         uses: changesets/action@v1
