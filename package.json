@@ -1,6 +1,6 @@
 {
   "name": "zod-sqlite",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "Generate type-safe SQLite table schemas from Zod validation schemas.",
   "private": false,
   "author": {
@@ -57,6 +57,7 @@
     "@typescript-eslint/eslint-plugin": "^8.51.0",
     "@typescript-eslint/parser": "^8.51.0",
     "@vitest/ui": "^4.0.16",
+    "db0": "^0.3.4",
     "eslint": "^9.39.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
