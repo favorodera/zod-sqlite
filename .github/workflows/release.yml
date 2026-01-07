@@ -1,77 +1,47 @@
 name: Release
-
-# Trigger workflow on pushes to main, alpha, or beta branches
 on:
   push:
     branches:
       - main
-      - alpha
-      - beta
 
-# Permissions required for the workflow
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
 permissions:
   contents: write
-  packages: write
   pull-requests: write
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout the repository
-      - name: Checkout
+      - name: Checkout Repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # 2. Install pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.26.1
 
-      # 3. Setup Node.js and configure npm registry caching
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
-          registry-url: https://registry.npmjs.org
 
-      # 4. Install dependencies
-      - name: Install dependencies
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      # 5. Build the project
-      - name: Build
-        run: pnpm build
-
-      # 6. Configure npm authentication
-      - name: Configure npm auth
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # 7. Publish pre-releases for alpha/beta branches
-      - name: Publish (prerelease branches)
-        if: github.ref_name != 'main'
+      - name: Create Version PR or Publish
+        id: changesets
         uses: changesets/action@v1
         with:
-          publish: pnpm dlx @changesets/cli publish --access public
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # 8. Exit pre-release mode for main branch
-      - name: Exit pre-release mode (if any)
-        if: github.ref_name == 'main'
-        run: pnpm dlx @changesets/cli pre exit || echo "No pre-release active"
-
-      # 9. Publish stable release for main branch
-      - name: Publish (main / stable)
-        if: github.ref_name == 'main'
-        uses: changesets/action@v1
-        with:
-          publish: pnpm dlx @changesets/cli publish --tag latest --access public
+          version: pnpm ci:version
+          publish: pnpm ci:publish
+          title: "chore: release new versions"
+          commit: "chore: update versions and changelogs"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

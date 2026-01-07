@@ -48,7 +48,8 @@
     "lint": "eslint src --ext .ts --fix",
     "clean": "rm -rf dist",
     "prepublishOnly": "pnpm build && pnpm typecheck && pnpm vitest --watch=false",
-    "release": "pnpm build && pnpm dlx @changesets/cli publish"
+    "ci:release": "pnpm build && pnpm dlx @changesets/cli publish",
+    "ci:version": "pnpm dlx @changesets/cli version && pnpm install --no-frozen-lockfile"
   },
   "packageManager": "pnpm@10.26.1",
   "devDependencies": {
