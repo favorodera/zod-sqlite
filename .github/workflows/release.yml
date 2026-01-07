@@ -38,20 +38,20 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Set npm dist-tag
-        run: |
-          if [[ "${GITHUB_REF_NAME}" == "alpha" ]]; then
-            echo "DIST_TAG=alpha" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "beta" ]]; then
-            echo "DIST_TAG=beta" >> $GITHUB_ENV
-          else
-            echo "DIST_TAG=latest" >> $GITHUB_ENV
-          fi
-
-      - name: Create Release PR or Publish
+      - name: Publish (prerelease branches)
+        if: github.ref_name != 'main'
         uses: changesets/action@v1
         with:
-          publish: pnpm dlx @changesets/cli publish --tag $DIST_TAG
+          publish: pnpm dlx @changesets/cli publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish (main / stable)
+        if: github.ref_name == 'main'
+        uses: changesets/action@v1
+        with:
+          publish: pnpm dlx @changesets/cli publish --tag latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
