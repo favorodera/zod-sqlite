@@ -1,5 +1,17 @@
 # zod-sqlite
 
+## 1.0.1
+
+### Patch Changes
+
+- Fix workflows
+
+## 1.0.0
+
+### Patch Changes
+
+- Fix workflows
+
 ## 1.0.0
 
 ### Major Changes
