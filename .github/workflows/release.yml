@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+      - alpha
+      - beta
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Set npm dist-tag
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "alpha" ]]; then
+            echo "DIST_TAG=alpha" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF_NAME}" == "beta" ]]; then
+            echo "DIST_TAG=beta" >> $GITHUB_ENV
+          else
+            echo "DIST_TAG=latest" >> $GITHUB_ENV
+          fi
+
+      - name: Create Release PR or Publish
+        uses: changesets/action@v1
+        with:
+          publish: pnpm release --tag $DIST_TAG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
