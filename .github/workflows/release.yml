@@ -17,34 +17,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: 10.26.1
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
-      - run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Set npm dist-tag
-        run: |
-          if [[ "${GITHUB_REF_NAME}" == "alpha" ]]; then
-            echo "DIST_TAG=alpha" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "beta" ]]; then
-            echo "DIST_TAG=beta" >> $GITHUB_ENV
-          else
-            echo "DIST_TAG=latest" >> $GITHUB_ENV
-          fi
+      - name: Build
+        run: pnpm build
 
-      - name: Create Release PR or Publish
+      - name: Publish (prerelease branches)
+        if: github.ref_name != 'main'
         uses: changesets/action@v1
         with:
-          publish: pnpm release --tag $DIST_TAG
+          publish: pnpm dlx @changesets/cli publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish (main / stable)
+        if: github.ref_name == 'main'
+        uses: changesets/action@v1
+        with:
+          publish: pnpm dlx @changesets/cli publish --tag latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
