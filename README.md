@@ -1,4 +1,4 @@
-# Zod to SQLite
+# Zod-SQLite
 
 Generate type-safe SQLite table schemas from Zod validation schemas. Define your database structure once using Zod, and automatically generate both SQL CREATE TABLE statements and runtime validation schemas with full TypeScript type inference.
 
@@ -47,7 +47,7 @@ npm install zod-sqlite
 Requires Zod v4 as a peer dependency:
 
 ```bash
-npm install zod@^4.0.0
+npm install zod
 ```
 
 ## Quick Start
@@ -823,72 +823,159 @@ const employees = createTable({
 
 ## Limitations
 
-### Composite Foreign Keys
+### Composite Foreign Keys (By Design)
 
-Currently only single-column foreign keys are supported. Composite foreign keys must be added manually:
+Single-column foreign keys are supported at the column level. Composite foreign keys require table-level constraints that reference multiple tables, which is outside the scope of single-table schema generation.
+
+**Why this is intentional:** `createTable` generates schema for one table at a time. Composite foreign keys are cross-table relationships that should be managed explicitly by developers as part of overall database design.
+
+**Pattern for composite foreign keys:**
 
 ```typescript
-// Not supported in column config
-// Workaround: Add after table creation
-ALTER TABLE order_items 
-ADD CONSTRAINT fk_order 
-FOREIGN KEY (tenant_id, order_id) 
-REFERENCES orders(tenant_id, id);
+// 1. Create parent table with composite primary key
+const { table: ordersTable } = createTable({
+  name: 'orders',
+  columns: [
+    { name: 'tenant_id', schema: z.string() },
+    { name: 'order_id', schema: z.int() },
+    { name: 'total', schema: z.number() },
+  ],
+  primaryKeys: ['tenant_id', 'order_id'],
+})
+
+// 2. Create child table with matching columns
+const { table: itemsTable } = createTable({
+  name: 'order_items',
+  columns: [
+    { name: 'id', schema: z.int() },
+    { name: 'tenant_id', schema: z.string() },
+    { name: 'order_id', schema: z.int() },
+    { name: 'product', schema: z.string() },
+  ],
+  primaryKeys: ['id'],
+})
+
+// 3. Execute table creation
+db.exec(ordersTable)
+db.exec(itemsTable)
+
+// 4. Add composite foreign key constraint
+db.exec(`
+  ALTER TABLE order_items 
+  ADD CONSTRAINT fk_order 
+  FOREIGN KEY (tenant_id, order_id) 
+  REFERENCES orders(tenant_id, order_id)
+  ON DELETE CASCADE
+`)
 ```
 
 ### Complex CHECK Constraints
 
-Only specific Zod validations are converted to CHECK constraints:
-- Enums and literals
-- Numeric min/max
-- String length min/max/equals
+Only specific Zod validations generate CHECK constraints:
+- **Enums and literals**: `z.enum(['a', 'b'])`, `z.literal('value')`
+- **Numeric ranges**: `.min()`, `.max()` on numbers
+- **String length**: `.min()`, `.max()`, `.length()` on strings
 
-Custom refinements and complex validations are not converted:
+Custom refinements and complex validations work at the application level but don't generate SQL constraints:
 
 ```typescript
-z.string().refine(val => val.includes('@'), 'Must contain @')
-// This validation works in TypeScript but won't create a CHECK constraint
+{ 
+  name: 'email', 
+  schema: z.string().refine(val => val.includes('@'), 'Must contain @')
+}
+// ✅ Runtime validation works
+// ❌ No CHECK constraint in SQL
+// Still stored as: email TEXT NOT NULL
 ```
+
+**Why:** SQL CHECK constraints are limited compared to JavaScript validation. Complex rules should be validated in application code using the generated Zod schema.
 
 ### Array and Object Storage
 
-Arrays and objects are stored as TEXT (JSON). You must handle serialization:
+Arrays and objects are stored as TEXT with JSON serialization. You must handle serialization manually:
 
 ```typescript
 { name: 'tags', schema: z.array(z.string()) }
-// Stored as TEXT, you need to JSON.stringify/parse manually
+// SQL: tags TEXT NOT NULL
+
+// You need to handle:
+const data = { tags: ['tech', 'news'] }
+db.exec(`INSERT INTO posts (tags) VALUES (?)`, [JSON.stringify(data.tags)])
+
+const result = db.query(`SELECT tags FROM posts`)
+const tags = JSON.parse(result.tags) // ['tech', 'news']
+```
+
+**Recommendation:** For better queryability, consider separate tables for array data:
+```typescript
+// Instead of storing tags as JSON array
+// Use a junction table: post_tags (post_id, tag_id)
 ```
 
 ### Date Handling
 
-Dates are stored as TEXT in ISO 8601 format. SQLite has limited native date support:
+Dates are stored as TEXT in ISO 8601 format. SQLite doesn't have a native DATE type:
 
 ```typescript
 { name: 'created_at', schema: z.date() }
-// Stored as TEXT: '2026-01-06T12:30:00.000Z'
-// Use SQLite date functions for queries: date(created_at)
+// SQL: created_at DATE NOT NULL
+// Stored as TEXT: '2026-01-07T12:30:00.000Z'
+```
+
+**Querying dates:** Use SQLite's date functions:
+```sql
+-- Filter by date
+SELECT * FROM posts WHERE date(created_at) = '2026-01-07'
+
+-- Date arithmetic
+SELECT * FROM posts WHERE date(created_at) > date('now', '-7 days')
+
+-- Extract parts
+SELECT strftime('%Y', created_at) as year FROM posts
 ```
 
 ### No Migration Support
 
-This generates CREATE TABLE statements but doesn't handle schema migrations. For production use, consider a migration tool.
+This library generates CREATE TABLE statements for initial schema definition. It does not:
+- Track schema changes over time
+- Generate ALTER TABLE migrations
+- Handle data migrations
+- Manage version history
 
-### SQLite-Specific
+### SQLite-Specific Features
 
-This is designed specifically for SQLite. Features may not translate to other databases:
-- Type affinity rules are SQLite-specific
-- Some constraint syntax is SQLite-specific
-- Boolean storage as 0/1 is SQLite convention
+This tool is designed specifically for SQLite. Some features may not translate to other databases:
+
+| Feature | SQLite Behavior | Other Databases |
+|---------|----------------|-----------------|
+| Type System | Dynamic type affinity | Strict typing (PostgreSQL, MySQL) |
+| Boolean Storage | 0/1 integers | True BOOLEAN type |
+| Date Storage | TEXT in ISO 8601 | Native DATE/TIMESTAMP types |
+| CHECK Constraints | Fully supported | Varies by database |
+| Foreign Keys | Optional (needs PRAGMA) | Usually enforced by default |
+
+**Portability:** If you need multi-database support, consider an ORM like Prisma or TypeORM instead.
 
 ### Foreign Key Enforcement
 
-SQLite doesn't enforce foreign keys by default. You must enable them:
+**Critical:** SQLite does not enforce foreign key constraints by default. You must enable them:
 
-```sql
-PRAGMA foreign_keys = ON;
+```typescript
+// Example using db0
+const db = createDatabase(sqlite({ 
+  name: './db.sqlite',
+}))
+
+// Enable for each database connection
+db.exec('PRAGMA foreign_keys = ON')
 ```
 
-This must be set for each database connection.
+Without this pragma:
+- Foreign key constraints are ignored
+- No referential integrity checks
+- Data can become inconsistent
+
+**Always enable this in production** to maintain data integrity.
 
 ---
 
