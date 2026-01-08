@@ -181,7 +181,9 @@ export type ForeignKeyReference = {
  *   where: 'status = "active"'
  * }
  */
-export type IndexConfig = {
+export type IndexConfig<
+  TColumns extends readonly ColumnConfig<string, zod.$ZodType>[] = readonly ColumnConfig<string, zod.$ZodType>[],
+> = {
   /**
    * Unique name for the index.
    *
@@ -202,7 +204,7 @@ export type IndexConfig = {
    * @example ['email'] - single column
    * @example ['last_name', 'first_name'] - composite index
    */
-  columns: string[]
+  columns: ReadonlyArray<TColumns[number]['name']>
 
   /**
    * Whether this is a unique index.
@@ -492,5 +494,5 @@ export type TableConfig<
    *   }
    * ]
    */
-  indexes?: IndexConfig[]
+  indexes?: IndexConfig<TColumns>[]
 }
