@@ -1,5 +1,11 @@
 # zod-sqlite
 
+## 1.0.2
+
+### Patch Changes
+
+- cc3153e: make IndexConfig generic for type-safe column names
+
 ## 1.0.1
 
 ### Patch Changes

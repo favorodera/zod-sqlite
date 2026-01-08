@@ -1,6 +1,6 @@
 {
   "name": "zod-sqlite",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Generate type-safe SQLite table schemas from Zod validation schemas.",
   "private": false,
   "author": {
