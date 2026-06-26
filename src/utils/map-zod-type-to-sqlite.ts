@@ -1,81 +1,92 @@
+/* eslint-disable perfectionist/sort-switch-case */
+import type * as zod from 'zod/v4/core'
 import type { SQLiteSupportType, SQLiteType } from '../types'
-import * as zod from 'zod/v4/core'
 
 /**
  * Maps a Zod type to an SQLite column type.
  *
  * analyzes the Zod schema type and optionally its format (e.g., z.email())
  * to determine the most appropriate SQLite storage class or supported type.
- *
- * @param zodType - Zod type string (e.g., 'string', 'number')
- * @param schema - The actual Zod schema instance
+ * @param zodType Zod type string (e.g., 'string', 'number')
+ * @param schema The actual Zod schema instance
  * @returns SQLite column type
  */
-export function mapZodTypeToSQLite(zodType: zod.$ZodTypes['_zod']['def']['type'], schema: zod.$ZodType): SQLiteType | SQLiteSupportType {
+export function mapZodTypeToSQLite(zodType: zod.$ZodTypes['_zod']['def']['type'], schema: zod.$ZodType): SQLiteSupportType | SQLiteType {
   switch (zodType) {
-
     case 'string': {
-
       const format = (schema as zod.$ZodStringFormat)._zod.def.format as zod.$ZodStringFormats
 
       switch (format) {
-        case 'date':
+        case 'date': {
           return 'DATE'
+        }
 
-        case 'datetime':
+        case 'datetime': {
           return 'DATETIME'
+        }
 
-        case 'duration':
+        case 'duration': {
           return 'INTEGER'
+        }
 
-        default:
+        default: {
           return 'TEXT'
+        }
       }
-
     }
-
-    case 'date':
-      return 'DATE'
 
     case 'enum':
     case 'literal':
-    case 'template_literal':
     case 'array':
-    case 'object':
+    case 'template_literal':
+    case 'object': {
       return 'TEXT'
+    }
 
-    case 'number':{
+    case 'date': {
+      return 'DATE'
+    }
+
+    case 'number': {
       const format = (schema as zod.$ZodNumberFormat)._zod.def.format
 
       switch (format) {
         case 'safeint':
         case 'uint32':
-        case 'int32':
+        case 'int32': {
           return 'INTEGER'
+        }
 
         case 'float32':
-        case 'float64':
+        case 'float64': {
           return 'FLOAT'
+        }
 
-        default:
+        default: {
           return 'REAL'
+        }
       }
     }
 
-    case 'boolean':
+    case 'boolean': {
       return 'BOOLEAN'
+    }
 
-    case 'bigint':
+    case 'bigint': {
       return 'BIGINT'
+    }
 
     case 'null':
-    case 'undefined':
+    case 'undefined': {
       return 'NULL'
+    }
 
-    case 'file':
+    case 'file': {
       return 'BLOB'
+    }
 
-    default:
+    default: {
       return 'TEXT'
+    }
   }
 }
