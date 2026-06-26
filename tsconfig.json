@@ -1,41 +1,20 @@
 {
   "compilerOptions": {
-    // Language and Environment
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
+    "target": "esnext",
+    "lib": ["es2023"],
+    "moduleDetection": "force",
+    "module": "preserve",
     "moduleResolution": "bundler",
-    
-    // Type Checking
+    "resolveJsonModule": true,
+    "types": ["node"],
     "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noFallthroughCasesInSwitch": true,
-    "allowUnusedLabels": false,
-    "allowUnreachableCode": false,
-    "exactOptionalPropertyTypes": true,
-    
-    // Emit
+    "noUnusedLocals": true,
     "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "removeComments": false,
-    "noEmit": true, // tsup handles emit
-    
-    // Interop Constraints
-    "isolatedModules": true,
+    "emitDeclarationOnly": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    
-    // Skip Lib Check
-    "skipLibCheck": true,
-    
-    // Output
-    "outDir": "dist",
-    "rootDir": "src"
+    "skipLibCheck": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
+  "include": ["src"]
 }
