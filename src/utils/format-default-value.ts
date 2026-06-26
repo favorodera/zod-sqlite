@@ -1,30 +1,35 @@
+/* eslint-disable perfectionist/sort-switch-case */
 import type { SQLiteSupportType, SQLiteType } from '../types'
 
 /**
  * Formats a default value for SQL.
  *
  * Handles string quoting and type conversions for DEFAULT clauses.
- *
- * @param value - The default value
- * @param SQLiteType - Target column type
+ * @param value The default value
+ * @param SQLiteType Target column type
  * @returns Formatted SQL default string (e.g., "DEFAULT 'val'", "DEFAULT 42")
  */
-export function formatDefaultValue(value: unknown, SQLiteType: SQLiteType | SQLiteSupportType) {
+export function formatDefaultValue(value: unknown, SQLiteType: SQLiteSupportType | SQLiteType) {
   switch (SQLiteType) {
-    case 'TEXT':
-      return `DEFAULT '${String(value).replace(/'/g, "''")}'`
+    case 'TEXT': {
+      return `DEFAULT '${String(value).replaceAll('\'', '\'\'')}'`
+    }
 
     case 'INTEGER':
-    case 'REAL':
+    case 'REAL': {
       return `DEFAULT ${Number(value)}`
+    }
 
-    case 'BOOLEAN':
-      return `DEFAULT ${Boolean(value) ? 1 : 0}`
+    case 'BOOLEAN': {
+      return `DEFAULT ${value ? 1 : 0}`
+    }
 
-    case 'NULL':
+    case 'NULL': {
       return 'DEFAULT NULL'
+    }
 
-    default:
+    default: {
       return `DEFAULT '${value}'`
+    }
   }
 }

@@ -1,6 +1,15 @@
-# Zod-SQLite
+<div align="center">
+  <h1>Zod-SQLite</h1>
+  <p><strong>Generate type-safe SQLite table schemas from Zod validation schemas. Define your database structure once using Zod, and automatically generate both SQL CREATE TABLE statements and runtime validation schemas with full TypeScript type inference.</strong></p>
+  <p>
+    <a href="https://github.com/favorodera/zod-sqlite/blob/main/LICENSE"><img src="https://img.shields.io/github/license/favorodera/zod-sqlite.svg?style=plastic&label=License&color=blue" alt="License"></a>
+    <a href="https://github.com/favorodera/zod-sqlite/stargazers"><img src="https://img.shields.io/github/stars/favorodera/zod-sqlite.svg?style=plastic&label=Stars&color=blue" alt="GitHub Stars"></a>
+    <a href="https://npmx.dev/package/zod-sqlite"><img src="https://img.shields.io/npm/dt/zod-sqlite.svg?style=plastic&label=NPM%20Downloads&color=blue" alt="NPM Downloads"></a>
+    <a href="https://npmx.dev/package/zod-sqlite"><img src="https://img.shields.io/npm/v/zod-sqlite.svg?style=plastic&label=Version&color=blue" alt="NPM Version"></a>
+  </p>
+</div>
 
-Generate type-safe SQLite table schemas from Zod validation schemas. Define your database structure once using Zod, and automatically generate both SQL CREATE TABLE statements and runtime validation schemas with full TypeScript type inference.
+<br>
 
 ## Table of Contents
 
@@ -44,32 +53,25 @@ This tool bridges the gap between Zod schemas and SQLite database definitions. I
 npm install zod-sqlite
 ```
 
-Requires Zod v4 as a peer dependency:
-
-```bash
-npm install zod
-```
-
 ## Quick Start
 
 Here's a simple example creating a users table:
 
 ```typescript
-import { createTable } from 'zod-sqlite'
 import { z } from 'zod'
+import { createTable } from 'zod-sqlite'
 
 const users = createTable({
-  name: 'users',
   columns: [
     { name: 'id', schema: z.int() },
     { name: 'email', schema: z.email() },
-    { name: 'username', schema: z.string().min(3).max(20) },
-    { name: 'created_at', schema: z.date().default(new Date()) }
+    { name: 'username', schema: z.string().min(3)
+      .max(20) },
+    { name: 'created_at', schema: z.date().default(new Date()) },
   ],
+  indexes: [{ columns: ['email'], name: 'idx_users_email', unique: true }],
+  name: 'users',
   primaryKeys: ['id'],
-  indexes: [
-    { name: 'idx_users_email', columns: ['email'], unique: true }
-  ]
 })
 
 // Use the generated SQL
@@ -87,10 +89,10 @@ console.log(users.indexes[0])
 
 // Validate data at runtime
 const result = users.schema.safeParse({
-  id: 1,
+  created_at: new Date(),
   email: 'user@example.com',
+  id: 1,
   username: 'john',
-  created_at: new Date()
 })
 
 // TypeScript type inference
@@ -140,7 +142,7 @@ Creates a table definition with SQL statements and validation schema.
 
 **Returns:**
 
-```typescript
+```
 {
   table: string        // CREATE TABLE SQL statement
   indexes: string[]    // Array of CREATE INDEX statements
@@ -151,14 +153,14 @@ Creates a table definition with SQL statements and validation schema.
 **Example:**
 
 ```typescript
-const { table, indexes, schema } = createTable({
-  name: 'products',
+const { indexes, schema, table } = createTable({
   columns: [
     { name: 'id', schema: z.int() },
     { name: 'name', schema: z.string() },
-    { name: 'price', schema: z.number().min(0) }
+    { name: 'price', schema: z.number().min(0) },
   ],
-  primaryKeys: ['id']
+  name: 'products',
+  primaryKeys: ['id'],
 })
 ```
 
@@ -167,11 +169,11 @@ const { table, indexes, schema } = createTable({
 Configuration object for table creation.
 
 ```typescript
-type TableConfig = {
-  name: string                    // Table name
-  columns: ColumnConfig[]         // Array of column definitions
-  primaryKeys: string[]           // Column names forming primary key
-  indexes?: IndexConfig[]         // Optional index configurations
+interface TableConfig {
+  columns: Array<ColumnConfig> // Array of column definitions
+  indexes?: Array<IndexConfig> // Optional index configurations
+  name: string // Table name
+  primaryKeys: Array<string> // Column names forming primary key
 }
 ```
 
@@ -180,11 +182,11 @@ type TableConfig = {
 Configuration for a single column.
 
 ```typescript
-type ColumnConfig = {
-  name: string                    // Column name
-  schema: ZodType                 // Zod schema defining type and validation
-  unique?: boolean                // Whether values must be unique
+interface ColumnConfig {
+  name: string // Column name
   references?: ForeignKeyReference // Foreign key configuration
+  schema: ZodType // Zod schema defining type and validation
+  unique?: boolean // Whether values must be unique
 }
 ```
 
@@ -193,19 +195,19 @@ type ColumnConfig = {
 Foreign key constraint configuration.
 
 ```typescript
-type ForeignKeyReference = {
-  table: string                   // Referenced table name
-  column: string                  // Referenced column name
-  onDelete?: ForeignKeyAction     // Action on parent deletion
-  onUpdate?: ForeignKeyAction     // Action on parent update
+interface ForeignKeyReference {
+  column: string // Referenced column name
+  onDelete?: ForeignKeyAction // Action on parent deletion
+  onUpdate?: ForeignKeyAction // Action on parent update
+  table: string // Referenced table name
 }
 
-type ForeignKeyAction = 
-  | 'NO ACTION'
-  | 'RESTRICT' 
-  | 'SET NULL'
-  | 'SET DEFAULT'
-  | 'CASCADE'
+type ForeignKeyAction
+  = | 'CASCADE'
+    | 'NO ACTION'
+    | 'RESTRICT'
+    | 'SET DEFAULT'
+    | 'SET NULL'
 ```
 
 ### IndexConfig
@@ -213,11 +215,11 @@ type ForeignKeyAction =
 Index configuration for query optimization.
 
 ```typescript
-type IndexConfig = {
-  name: string          // Index name
-  columns: string[]     // Indexed column names
-  unique?: boolean      // Whether this is a unique index
-  where?: string        // Optional WHERE clause for partial index
+interface IndexConfig {
+  columns: Array<string> // Indexed column names
+  name: string // Index name
+  unique?: boolean // Whether this is a unique index
+  where?: string // Optional WHERE clause for partial index
 }
 ```
 
@@ -269,23 +271,24 @@ These Zod wrappers are automatically unwrapped:
 - `.default(value)` - Adds DEFAULT clause
 
 ```typescript
-z.string().optional()           // TEXT (nullable)
-z.number().default(0)           // REAL NOT NULL DEFAULT 0
-z.string().nullable().default('n/a') // TEXT DEFAULT 'n/a'
+z.string().optional() // TEXT (nullable)
+z.number().default(0) // REAL NOT NULL DEFAULT 0
+z.string().nullable()
+  .default('n/a') // TEXT DEFAULT 'n/a'
 ```
 
 ## Column Configuration
 
 ### Basic Columns
 
-```typescript
+```
 { name: 'email', schema: z.email() }
 // SQL: email TEXT NOT NULL
 ```
 
 ### Optional and Nullable Columns
 
-```typescript
+```
 { name: 'bio', schema: z.string().optional() }
 // SQL: bio TEXT
 
@@ -295,7 +298,7 @@ z.string().nullable().default('n/a') // TEXT DEFAULT 'n/a'
 
 ### Columns with Default Values
 
-```typescript
+```
 { name: 'status', schema: z.enum(['active', 'inactive']).default('active') }
 // SQL: status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'inactive'))
 
@@ -305,7 +308,7 @@ z.string().nullable().default('n/a') // TEXT DEFAULT 'n/a'
 
 ### Unique Columns
 
-```typescript
+```
 { name: 'username', schema: z.string(), unique: true }
 // SQL: username TEXT NOT NULL UNIQUE
 ```
@@ -316,7 +319,7 @@ SQL CHECK constraints are automatically generated from Zod validation rules.
 
 ### Enum Constraints
 
-```typescript
+```
 { 
   name: 'role', 
   schema: z.enum(['admin', 'user', 'guest']) 
@@ -326,7 +329,7 @@ SQL CHECK constraints are automatically generated from Zod validation rules.
 
 ### Literal Constraints
 
-```typescript
+```
 { 
   name: 'type', 
   schema: z.literal('premium') 
@@ -346,7 +349,7 @@ SQL CHECK constraints are automatically generated from Zod validation rules.
 
 ### Numeric Range Constraints
 
-```typescript
+```
 { 
   name: 'age', 
   schema: z.int().min(18).max(120) 
@@ -362,7 +365,7 @@ SQL CHECK constraints are automatically generated from Zod validation rules.
 
 ### String Length Constraints
 
-```typescript
+```
 { 
   name: 'username', 
   schema: z.string().min(3).max(20) 
@@ -384,12 +387,12 @@ The most common pattern for entity tables:
 
 ```typescript
 createTable({
-  name: 'users',
   columns: [
     { name: 'id', schema: z.int() },
-    { name: 'email', schema: z.string() }
+    { name: 'email', schema: z.string() },
   ],
-  primaryKeys: ['id']
+  name: 'users',
+  primaryKeys: ['id'],
 })
 // SQL: PRIMARY KEY (id)
 ```
@@ -400,12 +403,15 @@ Used for junction tables and multi-tenant data:
 
 ```typescript
 createTable({
-  name: 'user_roles',
   columns: [
     { name: 'user_id', schema: z.int() },
-    { name: 'role_id', schema: z.int() }
+    { name: 'role_id', schema: z.int() },
   ],
-  primaryKeys: ['user_id', 'role_id']
+  name: 'user_roles',
+  primaryKeys: [
+    'user_id',
+    'role_id',
+  ],
 })
 // SQL: PRIMARY KEY (user_id, role_id)
 ```
@@ -414,13 +420,16 @@ createTable({
 
 ```typescript
 createTable({
-  name: 'documents',
   columns: [
     { name: 'tenant_id', schema: z.string() },
     { name: 'doc_id', schema: z.int() },
-    { name: 'title', schema: z.string() }
+    { name: 'title', schema: z.string() },
   ],
-  primaryKeys: ['tenant_id', 'doc_id']
+  name: 'documents',
+  primaryKeys: [
+    'tenant_id',
+    'doc_id',
+  ],
 })
 // SQL: PRIMARY KEY (tenant_id, doc_id)
 ```
@@ -431,19 +440,19 @@ createTable({
 
 ```typescript
 createTable({
-  name: 'posts',
   columns: [
     { name: 'id', schema: z.int() },
-    { 
-      name: 'author_id', 
-      schema: z.int(),
+    {
+      name: 'author_id',
       references: {
+        column: 'id',
         table: 'users',
-        column: 'id'
-      }
-    }
+      },
+      schema: z.int(),
+    },
   ],
-  primaryKeys: ['id']
+  name: 'posts',
+  primaryKeys: ['id'],
 })
 // SQL: author_id INTEGER NOT NULL REFERENCES users(id)
 ```
@@ -452,7 +461,7 @@ createTable({
 
 Automatically delete child records when parent is deleted:
 
-```typescript
+```
 {
   name: 'user_id',
   schema: z.int(),
@@ -469,7 +478,7 @@ Automatically delete child records when parent is deleted:
 
 Prevent deletion of parent if children exist:
 
-```typescript
+```
 {
   name: 'category_id',
   schema: z.int(),
@@ -486,7 +495,7 @@ Prevent deletion of parent if children exist:
 
 Set foreign key to NULL when parent is deleted:
 
-```typescript
+```
 {
   name: 'manager_id',
   schema: z.int().nullable(),
@@ -503,7 +512,7 @@ Set foreign key to NULL when parent is deleted:
 
 Propagate updates to child records:
 
-```typescript
+```
 {
   name: 'parent_id',
   schema: z.int(),
@@ -521,12 +530,12 @@ Propagate updates to child records:
 
 ### Simple Index
 
-```typescript
+```
 indexes: [
-  { 
-    name: 'idx_users_email', 
-    columns: ['email'] 
-  }
+  {
+    columns: ['email'],
+    name: 'idx_users_email',
+  },
 ]
 // SQL: CREATE INDEX idx_users_email ON users (email);
 ```
@@ -537,11 +546,11 @@ Enforce uniqueness at the database level:
 
 ```typescript
 indexes: [
-  { 
-    name: 'idx_users_username', 
-    columns: ['username'], 
-    unique: true 
-  }
+  {
+    columns: ['username'],
+    name: 'idx_users_username',
+    unique: true,
+  },
 ]
 // SQL: CREATE UNIQUE INDEX idx_users_username ON users (username);
 ```
@@ -552,10 +561,13 @@ Index multiple columns together for multi-column queries:
 
 ```typescript
 indexes: [
-  { 
-    name: 'idx_posts_author_date', 
-    columns: ['author_id', 'created_at'] 
-  }
+  {
+    columns: [
+      'author_id',
+      'created_at',
+    ],
+    name: 'idx_posts_author_date',
+  },
 ]
 // SQL: CREATE INDEX idx_posts_author_date ON posts (author_id, created_at);
 ```
@@ -572,11 +584,11 @@ Index only rows matching a condition:
 
 ```typescript
 indexes: [
-  { 
-    name: 'idx_active_users', 
+  {
     columns: ['last_login'],
-    where: 'deleted_at IS NULL'
-  }
+    name: 'idx_active_users',
+    where: 'deleted_at IS NULL',
+  },
 ]
 // SQL: CREATE INDEX idx_active_users ON posts (last_login) WHERE deleted_at IS NULL;
 ```
@@ -593,78 +605,94 @@ Benefits:
 ```typescript
 // Users table
 const users = createTable({
-  name: 'users',
   columns: [
     { name: 'id', schema: z.int() },
     { name: 'email', schema: z.email(), unique: true },
-    { name: 'username', schema: z.string().min(3).max(20), unique: true },
-    { name: 'role', schema: z.enum(['admin', 'author', 'reader']).default('reader') },
-    { name: 'created_at', schema: z.date().default(new Date()) }
+    { name: 'username', schema: z.string().min(3)
+      .max(20), unique: true },
+    { name: 'role', schema: z.enum([
+      'admin',
+      'author',
+      'reader',
+    ]).default('reader') },
+    { name: 'created_at', schema: z.date().default(new Date()) },
   ],
-  primaryKeys: ['id'],
   indexes: [
-    { name: 'idx_users_email', columns: ['email'], unique: true },
-    { name: 'idx_users_role', columns: ['role'] }
-  ]
+    { columns: ['email'], name: 'idx_users_email', unique: true },
+    { columns: ['role'], name: 'idx_users_role' },
+  ],
+  name: 'users',
+  primaryKeys: ['id'],
 })
 
 // Posts table with foreign key
 const posts = createTable({
-  name: 'posts',
   columns: [
     { name: 'id', schema: z.int() },
-    { name: 'title', schema: z.string().min(1).max(200) },
+    { name: 'title', schema: z.string().min(1)
+      .max(200) },
     { name: 'content', schema: z.string() },
-    { name: 'status', schema: z.enum(['draft', 'published', 'archived']).default('draft') },
-    { 
-      name: 'author_id', 
-      schema: z.int(),
+    { name: 'status', schema: z.enum([
+      'draft',
+      'published',
+      'archived',
+    ]).default('draft') },
+    {
+      name: 'author_id',
       references: {
-        table: 'users',
         column: 'id',
-        onDelete: 'CASCADE'
-      }
+        onDelete: 'CASCADE',
+        table: 'users',
+      },
+      schema: z.int(),
     },
     { name: 'published_at', schema: z.date().nullable() },
-    { name: 'created_at', schema: z.date().default(new Date()) }
+    { name: 'created_at', schema: z.date().default(new Date()) },
   ],
-  primaryKeys: ['id'],
   indexes: [
-    { name: 'idx_posts_author', columns: ['author_id'] },
-    { 
-      name: 'idx_posts_published', 
+    { columns: ['author_id'], name: 'idx_posts_author' },
+    {
       columns: ['published_at'],
-      where: "status = 'published'"
+      name: 'idx_posts_published',
+      where: 'status = \'published\'',
     },
-    { name: 'idx_posts_status_date', columns: ['status', 'created_at'] }
-  ]
+    { columns: [
+      'status',
+      'created_at',
+    ], name: 'idx_posts_status_date' },
+  ],
+  name: 'posts',
+  primaryKeys: ['id'],
 })
 
 // Junction table for tags (many-to-many)
 const postTags = createTable({
-  name: 'post_tags',
   columns: [
-    { 
-      name: 'post_id', 
-      schema: z.int(),
+    {
+      name: 'post_id',
       references: {
+        column: 'id',
+        onDelete: 'CASCADE',
         table: 'posts',
-        column: 'id',
-        onDelete: 'CASCADE'
-      }
-    },
-    { 
-      name: 'tag_id', 
+      },
       schema: z.int(),
-      references: {
-        table: 'tags',
-        column: 'id',
-        onDelete: 'CASCADE'
-      }
     },
-    { name: 'created_at', schema: z.date().default(new Date()) }
+    {
+      name: 'tag_id',
+      references: {
+        column: 'id',
+        onDelete: 'CASCADE',
+        table: 'tags',
+      },
+      schema: z.int(),
+    },
+    { name: 'created_at', schema: z.date().default(new Date()) },
   ],
-  primaryKeys: ['post_id', 'tag_id']
+  name: 'post_tags',
+  primaryKeys: [
+    'post_id',
+    'tag_id',
+  ],
 })
 ```
 
@@ -672,35 +700,39 @@ const postTags = createTable({
 
 ```typescript
 const products = createTable({
-  name: 'products',
   columns: [
     { name: 'id', schema: z.int() },
     { name: 'sku', schema: z.string().length(10), unique: true },
     { name: 'name', schema: z.string().min(1) },
     { name: 'description', schema: z.string().optional() },
     { name: 'price', schema: z.number().min(0) },
-    { name: 'stock', schema: z.int().min(0).default(0) },
+    { name: 'stock', schema: z.int().min(0)
+      .default(0) },
     { name: 'active', schema: z.boolean().default(true) },
-    { 
-      name: 'category_id', 
-      schema: z.int(),
+    {
+      name: 'category_id',
       references: {
-        table: 'categories',
         column: 'id',
-        onDelete: 'RESTRICT'
-      }
-    }
+        onDelete: 'RESTRICT',
+        table: 'categories',
+      },
+      schema: z.int(),
+    },
   ],
-  primaryKeys: ['id'],
   indexes: [
-    { name: 'idx_products_sku', columns: ['sku'], unique: true },
-    { name: 'idx_products_category', columns: ['category_id'] },
-    { 
-      name: 'idx_products_active', 
-      columns: ['price', 'stock'],
-      where: 'active = 1'
-    }
-  ]
+    { columns: ['sku'], name: 'idx_products_sku', unique: true },
+    { columns: ['category_id'], name: 'idx_products_category' },
+    {
+      columns: [
+        'price',
+        'stock',
+      ],
+      name: 'idx_products_active',
+      where: 'active = 1',
+    },
+  ],
+  name: 'products',
+  primaryKeys: ['id'],
 })
 ```
 
@@ -708,25 +740,23 @@ const products = createTable({
 
 ```typescript
 const employees = createTable({
-  name: 'employees',
   columns: [
     { name: 'id', schema: z.int() },
     { name: 'name', schema: z.string() },
     { name: 'email', schema: z.email(), unique: true },
-    { 
-      name: 'manager_id', 
-      schema: z.int().nullable(),
+    {
+      name: 'manager_id',
       references: {
-        table: 'employees',
         column: 'id',
-        onDelete: 'SET NULL'
-      }
-    }
+        onDelete: 'SET NULL',
+        table: 'employees',
+      },
+      schema: z.int().nullable(),
+    },
   ],
+  indexes: [{ columns: ['manager_id'], name: 'idx_employees_manager' }],
+  name: 'employees',
   primaryKeys: ['id'],
-  indexes: [
-    { name: 'idx_employees_manager', columns: ['manager_id'] }
-  ]
 })
 ```
 
@@ -738,16 +768,21 @@ const employees = createTable({
 
 2. **Use appropriate types**: Choose the most specific Zod type that matches your data:
    ```typescript
-   z.int()           // For IDs and counts
-   z.number().min(0)          // For prices and quantities
-   z.enum(['a', 'b'])         // For status fields
-   z.email()         // For email addresses
+   z.int() // For IDs and counts
+   z.number().min(0) // For prices and quantities
+   z.enum([
+     'a',
+     'b',
+   ]) // For status fields
+   z.email() // For email addresses
    ```
 
 3. **Add validation at the schema level**: Leverage Zod's validation to prevent invalid data:
    ```typescript
-   z.string().min(3).max(50)  // Username length
-   z.number().min(0).max(5)   // Rating scale
+   z.string().min(3)
+     .max(50) // Username length
+   z.number().min(0)
+     .max(5) // Rating scale
    ```
 
 ### Foreign Keys
@@ -774,18 +809,21 @@ const employees = createTable({
    ```typescript
    indexes: [
      // Good: Filters by tenant first (high selectivity)
-     { name: 'idx_tenant_user', columns: ['tenant_id', 'user_id'] }
+     { columns: [
+       'tenant_id',
+       'user_id',
+     ], name: 'idx_tenant_user' },
    ]
    ```
 
 4. **Consider partial indexes**: Reduce index size for filtered queries:
    ```typescript
    indexes: [
-     { 
-       name: 'idx_active_records', 
+     {
        columns: ['created_at'],
-       where: 'deleted_at IS NULL'  // Only index active records
-     }
+       name: 'idx_active_records',
+       where: 'deleted_at IS NULL', // Only index active records
+     },
    ]
    ```
 
@@ -834,24 +872,27 @@ Single-column foreign keys are supported at the column level. Composite foreign 
 ```typescript
 // 1. Create parent table with composite primary key
 const { table: ordersTable } = createTable({
-  name: 'orders',
   columns: [
     { name: 'tenant_id', schema: z.string() },
     { name: 'order_id', schema: z.int() },
     { name: 'total', schema: z.number() },
   ],
-  primaryKeys: ['tenant_id', 'order_id'],
+  name: 'orders',
+  primaryKeys: [
+    'tenant_id',
+    'order_id',
+  ],
 })
 
 // 2. Create child table with matching columns
 const { table: itemsTable } = createTable({
-  name: 'order_items',
   columns: [
     { name: 'id', schema: z.int() },
     { name: 'tenant_id', schema: z.string() },
     { name: 'order_id', schema: z.int() },
     { name: 'product', schema: z.string() },
   ],
+  name: 'order_items',
   primaryKeys: ['id'],
 })
 
@@ -878,7 +919,7 @@ Only specific Zod validations generate CHECK constraints:
 
 Custom refinements and complex validations work at the application level but don't generate SQL constraints:
 
-```typescript
+```
 { 
   name: 'email', 
   schema: z.string().refine(val => val.includes('@'), 'Must contain @')
@@ -894,7 +935,7 @@ Custom refinements and complex validations work at the application level but don
 
 Arrays and objects are stored as TEXT with JSON serialization. You must handle serialization manually:
 
-```typescript
+```
 { name: 'tags', schema: z.array(z.string()) }
 // SQL: tags TEXT NOT NULL
 
@@ -916,7 +957,7 @@ const tags = JSON.parse(result.tags) // ['tech', 'news']
 
 Dates are stored as TEXT in ISO 8601 format. SQLite doesn't have a native DATE type:
 
-```typescript
+```
 { name: 'created_at', schema: z.date() }
 // SQL: created_at DATE NOT NULL
 // Stored as TEXT: '2026-01-07T12:30:00.000Z'
@@ -962,7 +1003,7 @@ This tool is designed specifically for SQLite. Some features may not translate t
 
 ```typescript
 // Example using db0
-const db = createDatabase(sqlite({ 
+const db = createDatabase(sqlite({
   name: './db.sqlite',
 }))
 

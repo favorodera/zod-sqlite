@@ -1,4 +1,4 @@
-import * as zod from 'zod/v4/core'
+import type * as zod from 'zod/v4/core'
 import { mapZodTypeToSQLite } from './map-zod-type-to-sqlite'
 
 /**
@@ -6,18 +6,19 @@ import { mapZodTypeToSQLite } from './map-zod-type-to-sqlite'
  *
  * Unwraps optional/nullable/default layers to find the underlying core type
  * and extracts metadata like nullability and default values.
- *
- * @param schema - Zod schema to analyze
+ * @param schema Zod schema to analyze
  * @returns Object containing SQLite type, nullability, default value, and inner schema
  */
 export function zodToSQLite(schema: zod.$ZodType) {
   let nullable = false
-  let defaultValue = undefined
+  let defaultValue
   let currentSchema = schema as zod.$ZodTypes
+
   // Unwrap wrapped schemas and collect metadata
   while (true) {
     const definition = currentSchema._zod.def
     const zodType = definition.type
+
     if (zodType === 'nullable' || zodType === 'optional') {
       nullable = true
       currentSchema = definition.innerType as zod.$ZodTypes
@@ -30,7 +31,9 @@ export function zodToSQLite(schema: zod.$ZodType) {
       break
     }
   }
+
   const mainType = currentSchema._zod.def.type
   const SQLiteType = mapZodTypeToSQLite(mainType, currentSchema)
-  return { SQLiteType, nullable, defaultValue, schema }
+
+  return { defaultValue, nullable, schema, SQLiteType }
 }

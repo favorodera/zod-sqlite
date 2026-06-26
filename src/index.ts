@@ -1,4 +1,3 @@
 export * from './types'
 
-export { createTable } from './core/table'
-
+export { createTable } from './table'
