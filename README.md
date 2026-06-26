@@ -1,6 +1,15 @@
-# Zod-SQLite
+<div align="center">
+  <h1>Zod-SQLite</h1>
+  <p><strong>Generate type-safe SQLite table schemas from Zod validation schemas. Define your database structure once using Zod, and automatically generate both SQL CREATE TABLE statements and runtime validation schemas with full TypeScript type inference.</strong></p>
+  <p>
+    <a href="https://github.com/favorodera/zod-sqlite/blob/main/LICENSE"><img src="https://img.shields.io/github/license/favorodera/zod-sqlite.svg?style=plastic&label=License&color=blue" alt="License"></a>
+    <a href="https://github.com/favorodera/zod-sqlite/stargazers"><img src="https://img.shields.io/github/stars/favorodera/zod-sqlite.svg?style=plastic&label=Stars&color=blue" alt="GitHub Stars"></a>
+    <a href="https://npmx.dev/package/zod-sqlite"><img src="https://img.shields.io/npm/dt/zod-sqlite.svg?style=plastic&label=NPM%20Downloads&color=blue" alt="NPM Downloads"></a>
+    <a href="https://npmx.dev/package/zod-sqlite"><img src="https://img.shields.io/npm/v/zod-sqlite.svg?style=plastic&label=Version&color=blue" alt="NPM Version"></a>
+  </p>
+</div>
 
-Generate type-safe SQLite table schemas from Zod validation schemas. Define your database structure once using Zod, and automatically generate both SQL CREATE TABLE statements and runtime validation schemas with full TypeScript type inference.
+<br>
 
 ## Table of Contents
 
@@ -42,12 +51,6 @@ This tool bridges the gap between Zod schemas and SQLite database definitions. I
 
 ```bash
 npm install zod-sqlite
-```
-
-Requires Zod v4 as a peer dependency:
-
-```bash
-npm install zod
 ```
 
 ## Quick Start
