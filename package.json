@@ -1,7 +1,7 @@
 {
   "name": "zod-sqlite",
   "type": "module",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": false,
   "packageManager": "pnpm@11.20.0",
   "description": "Generate type-safe SQLite table schemas from Zod validation schemas.",
@@ -29,7 +29,9 @@
     ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },

@@ -1,5 +1,23 @@
 # zod-sqlite
 
+## v1.0.3...v1.0.4
+
+[compare changes](https://github.com/favorodera/zod-sqlite/compare/v1.0.3...v1.0.4)
+
+### Chores
+
+- **repo:** Update dependencies and workflows ([a4b3a56](https://github.com/favorodera/zod-sqlite/commit/a4b3a56))
+
+  - Update GitHub actions and release workflows
+  - Convert issue templates to yaml forms
+  - Update catalog dependencies and package manager
+  - Format code blocks in readme and eslint config
+
+### ❤️ Contributors
+
+- Favour Emeka ([@favorodera](https://github.com/favorodera))
+
+
 ## v1.0.2...v1.0.3
 
 [compare changes](https://github.com/favorodera/zod-sqlite/compare/v1.0.2...v1.0.3)
