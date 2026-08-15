@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Documentation
-    url: https://github.com/favorodera/zod-sqlite#readme
+    url: https://github.com/favorodera/use-promise#readme
     about: Check our documentation for guides and API reference
   - name: Questions & Discussions
-    url: https://github.com/favorodera/zod-sqlite/discussions
+    url: https://github.com/favorodera/use-promise/discussions
     about: Ask questions and discuss ideas

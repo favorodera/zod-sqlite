@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.3",
   "private": false,
-  "packageManager": "pnpm@11.9.0",
+  "packageManager": "pnpm@11.20.0",
   "description": "Generate type-safe SQLite table schemas from Zod validation schemas.",
   "author": "Favour Emeka <favorodera@gmail.com>",
   "license": "MIT",
@@ -29,9 +29,7 @@
     ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "publishConfig": {
     "access": "public"
   },
@@ -47,7 +45,7 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm build",
     "lint": "eslint . --fix",
-    "ready": "pnpm install && pnpm build && pnpm lint && pnpm typecheck && pnpm test"
+    "ready": "pnpm install && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
     "zod": "catalog:vendor"
