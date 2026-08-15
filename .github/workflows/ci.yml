@@ -2,13 +2,16 @@ name: CI
 
 on: [push, pull_request]
 
+permissions:
+  statuses: write
+
 jobs:
   ci:
-    name: Lint, Typecheck, Build & Test
+    name: Lint, Typecheck, Test & Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
@@ -16,16 +19,13 @@ jobs:
         uses: pnpm/action-setup@v6.0.8
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm build
 
       - name: Lint
         run: pnpm lint
@@ -36,6 +36,10 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Build
+        run: pnpm build
+
+
   preview:
     name: Publish Preview Packages
     needs: ci
@@ -43,13 +47,13 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.1
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6.0.8
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -61,4 +65,4 @@ jobs:
         run: pnpm build
 
       - name: Publish Preview to pkg-pr-new
-        run: pnpm dlx pkg-pr-new publish
+        run: pnpm dlx pkg-pr-new publish --pnpm --packageManager="npm,pnpm,bun,yarn"

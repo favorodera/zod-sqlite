@@ -1,7 +1,7 @@
 {
   "name": "zod-sqlite",
   "type": "module",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": false,
   "packageManager": "pnpm@11.20.0",
   "description": "Generate type-safe SQLite table schemas from Zod validation schemas.",
@@ -47,7 +47,7 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm build",
     "lint": "eslint . --fix",
-    "ready": "pnpm install && pnpm build && pnpm lint && pnpm typecheck && pnpm test"
+    "ready": "pnpm install && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
     "zod": "catalog:vendor"
