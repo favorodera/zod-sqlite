@@ -142,7 +142,7 @@ Creates a table definition with SQL statements and validation schema.
 
 **Returns:**
 
-```
+```plaintext
 {
   table: string        // CREATE TABLE SQL statement
   indexes: string[]    // Array of CREATE INDEX statements
@@ -281,14 +281,14 @@ z.string().nullable()
 
 ### Basic Columns
 
-```
+```plaintext
 { name: 'email', schema: z.email() }
 // SQL: email TEXT NOT NULL
 ```
 
 ### Optional and Nullable Columns
 
-```
+```plaintext
 { name: 'bio', schema: z.string().optional() }
 // SQL: bio TEXT
 
@@ -298,7 +298,7 @@ z.string().nullable()
 
 ### Columns with Default Values
 
-```
+```plaintext
 { name: 'status', schema: z.enum(['active', 'inactive']).default('active') }
 // SQL: status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'inactive'))
 
@@ -308,7 +308,7 @@ z.string().nullable()
 
 ### Unique Columns
 
-```
+```plaintext
 { name: 'username', schema: z.string(), unique: true }
 // SQL: username TEXT NOT NULL UNIQUE
 ```
@@ -319,7 +319,7 @@ SQL CHECK constraints are automatically generated from Zod validation rules.
 
 ### Enum Constraints
 
-```
+```plaintext
 { 
   name: 'role', 
   schema: z.enum(['admin', 'user', 'guest']) 
@@ -329,7 +329,7 @@ SQL CHECK constraints are automatically generated from Zod validation rules.
 
 ### Literal Constraints
 
-```
+```plaintext
 { 
   name: 'type', 
   schema: z.literal('premium') 
@@ -349,7 +349,7 @@ SQL CHECK constraints are automatically generated from Zod validation rules.
 
 ### Numeric Range Constraints
 
-```
+```plaintext
 { 
   name: 'age', 
   schema: z.int().min(18).max(120) 
@@ -365,7 +365,7 @@ SQL CHECK constraints are automatically generated from Zod validation rules.
 
 ### String Length Constraints
 
-```
+```plaintext
 { 
   name: 'username', 
   schema: z.string().min(3).max(20) 
@@ -461,7 +461,7 @@ createTable({
 
 Automatically delete child records when parent is deleted:
 
-```
+```plaintext
 {
   name: 'user_id',
   schema: z.int(),
@@ -478,7 +478,7 @@ Automatically delete child records when parent is deleted:
 
 Prevent deletion of parent if children exist:
 
-```
+```plaintext
 {
   name: 'category_id',
   schema: z.int(),
@@ -495,7 +495,7 @@ Prevent deletion of parent if children exist:
 
 Set foreign key to NULL when parent is deleted:
 
-```
+```plaintext
 {
   name: 'manager_id',
   schema: z.int().nullable(),
@@ -512,7 +512,7 @@ Set foreign key to NULL when parent is deleted:
 
 Propagate updates to child records:
 
-```
+```plaintext
 {
   name: 'parent_id',
   schema: z.int(),
@@ -530,7 +530,7 @@ Propagate updates to child records:
 
 ### Simple Index
 
-```
+```plaintext
 indexes: [
   {
     columns: ['email'],
@@ -919,7 +919,7 @@ Only specific Zod validations generate CHECK constraints:
 
 Custom refinements and complex validations work at the application level but don't generate SQL constraints:
 
-```
+```plaintext
 { 
   name: 'email', 
   schema: z.string().refine(val => val.includes('@'), 'Must contain @')
@@ -935,7 +935,7 @@ Custom refinements and complex validations work at the application level but don
 
 Arrays and objects are stored as TEXT with JSON serialization. You must handle serialization manually:
 
-```
+```plaintext
 { name: 'tags', schema: z.array(z.string()) }
 // SQL: tags TEXT NOT NULL
 
@@ -957,7 +957,7 @@ const tags = JSON.parse(result.tags) // ['tech', 'news']
 
 Dates are stored as TEXT in ISO 8601 format. SQLite doesn't have a native DATE type:
 
-```
+```plaintext
 { name: 'created_at', schema: z.date() }
 // SQL: created_at DATE NOT NULL
 // Stored as TEXT: '2026-01-07T12:30:00.000Z'
