@@ -21,7 +21,7 @@ catalogs:
 
     eslint: ^10.8.1
     relizy: ^1.4.9
-    tsdown: ^0.22.14
+    tsdown: ^0.23.0
     typescript: ^6.0.3
     vitest: ^4.1.10
   vendor:
