@@ -16,14 +16,14 @@ catalogs:
     '@favorodera/eslint-config': ^1.0.4
     '@types/node': ^26.2.0
     '@typescript/native-preview': 7.0.0-dev.20260707.2
-    '@vitest/ui': 4.1.10
+    '@vitest/ui': 5.0.1
     db0: ^0.3.4
 
     eslint: ^10.8.1
     relizy: ^1.4.9
     tsdown: ^0.22.14
     typescript: ^6.0.3
-    vitest: ^4.1.10
+    vitest: ^5.0.0
   vendor:
     zod: ^4.4.3
 
