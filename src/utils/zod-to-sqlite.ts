@@ -10,7 +10,7 @@ import { mapZodTypeToSQLite } from './map-zod-type-to-sqlite'
  * @returns Object containing SQLite type, nullability, default value, and inner schema
  */
 export function zodToSQLite(schema: zod.$ZodType) {
-  let nullable = false
+  let isNullable = false
   let defaultValue
   let currentSchema = schema as zod.$ZodTypes
 
@@ -20,7 +20,7 @@ export function zodToSQLite(schema: zod.$ZodType) {
     const zodType = definition.type
 
     if (zodType === 'nullable' || zodType === 'optional') {
-      nullable = true
+      isNullable = true
       currentSchema = definition.innerType as zod.$ZodTypes
     } else if (zodType === 'default') {
       defaultValue = typeof definition.defaultValue === 'function'
@@ -35,5 +35,5 @@ export function zodToSQLite(schema: zod.$ZodType) {
   const mainType = currentSchema._zod.def.type
   const SQLiteType = mapZodTypeToSQLite(mainType, currentSchema)
 
-  return { defaultValue, nullable, schema, SQLiteType }
+  return { defaultValue, nullable: isNullable, schema, SQLiteType }
 }

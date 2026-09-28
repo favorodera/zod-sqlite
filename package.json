@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.4",
   "private": false,
-  "packageManager": "pnpm@11.27.0",
+  "packageManager": "pnpm@11.27.1",
   "description": "Generate type-safe SQLite table schemas from Zod validation schemas.",
   "author": "Favour Emeka <favorodera@gmail.com>",
   "license": "MIT",
@@ -29,9 +29,7 @@
     ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "publishConfig": {
     "access": "public"
   },
@@ -50,18 +48,17 @@
     "ready": "pnpm install && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
-    "zod": "catalog:vendor"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@favorodera/eslint-config": "catalog:dev",
-    "@types/node": "catalog:dev",
-    "@typescript/native-preview": "catalog:dev",
-    "@vitest/ui": "catalog:dev",
-    "db0": "catalog:dev",
-    "eslint": "catalog:dev",
-    "relizy": "catalog:dev",
-    "tsdown": "catalog:dev",
-    "typescript": "catalog:dev",
-    "vitest": "catalog:dev"
+    "@favorodera/eslint-config": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/ui": "catalog:",
+    "db0": "catalog:",
+    "eslint": "catalog:",
+    "relizy": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
