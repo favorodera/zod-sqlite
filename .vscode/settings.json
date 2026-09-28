@@ -1,0 +1,135 @@
+{
+  "files.autoSave": "afterDelay",
+  "git.autofetch": true,
+  "editor.tabSize": 2,
+  "js/ts.inlayHints.functionLikeReturnTypes.enabled": true,
+  "js/ts.inlayHints.parameterNames.enabled": "all",
+  "js/ts.inlayHints.parameterTypes.enabled": true,
+  "js/ts.inlayHints.variableTypes.enabled": true,
+  "js/ts.inlayHints.propertyDeclarationTypes.enabled": true,
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+  "js/ts.inlayHints.enumMemberValues.enabled": true,
+  "editor.suggest.snippetsPreventQuickSuggestions": true,
+  "editor.quickSuggestions": {
+    "strings": true,
+    "comments": "on"
+  },
+  "editor.minimap.enabled": false,
+  "terminal.integrated.cursorStyle": "line",
+  "scm.compactFolders": false,
+  "explorer.compactFolders": false,
+  "eslint.format.enable": true,
+  "editor.stickyScroll.enabled": false,
+  "workbench.tree.enableStickyScroll": false,
+  "terminal.integrated.stickyScroll.enabled": false,
+  "editor.wordWrap": "on",
+  "editor.detectIndentation": false,
+  "editor.indentSize": "tabSize",
+  "diffEditor.ignoreTrimWhitespace": false,
+  "editor.inlayHints.padding": true,
+  "editor.smoothScrolling": true,
+  "editor.stickyScroll.scrollWithEditor": false,
+  "files.eol": "\n",
+  "editor.inlayHints.enabled": "on",
+  "eslint.runtime": "node",
+  "editor.linkedEditing": true,
+  "git.replaceTagsWhenPull": true,
+  "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+  "editor.wrapOnEscapedLineFeeds": true,
+  "eslint.rules.customizations": [
+    {
+      "rule": "style/*",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "format/*",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-indent",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-spacing",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-spaces",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-order",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-dangle",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-newline",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*quotes",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*semi",
+      "severity": "off",
+      "fixable": true
+    }
+  ],
+  "npm.packageManager": "pnpm",
+  "editor.defaultColorDecorators": "always",
+  "editor.inlayHints.maximumLength": 10,
+  "cSpell.ignorePaths": [
+    "package-lock.json",
+    "node_modules",
+    "vscode-extension",
+    ".git/{info,lfs,logs,refs,objects}/**",
+    ".git/{index,*refs,*HEAD}",
+    ".vscode",
+    ".vscode-insiders",
+    ".gitignore",
+    ".gitattributes",
+    "pnpm-lock.yaml"
+  ],
+  "eslint.validate": [
+    "javascript",
+    "vue",
+    "typescript",
+    "json",
+    "jsonc",
+    "json5",
+    "html",
+    "markdown",
+    "yaml",
+    "yml",
+    "mdc"
+  ],
+  "workbench.navigationControl.enabled": false,
+  "telemetry.feedback.enabled": false,
+  "workbench.editor.enablePreview": false,
+  "cSpell.words": [
+    "Emeka",
+    "esbuild",
+    "favorodera",
+    "queryability",
+    "relizy",
+    "safeint",
+    "strftime",
+    "tsdown",
+    "validatable",
+    "vite",
+    "vitest"
+  ]
+}

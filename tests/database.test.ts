@@ -10,6 +10,7 @@ let db: Database
 
 describe('database Integration Tests', () => {
   beforeAll(async () => {
+    // eslint-disable-next-line unicorn/no-top-level-assignment-in-function
     db = createDatabase(sqlite({ name: './tests/db' }))
 
     // Drop all existing tables

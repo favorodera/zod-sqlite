@@ -61,14 +61,12 @@ export function formatCheckConstraint(name: string, schema: zod.$ZodType) {
 
     case 'number': {
       const checks = definition.checks
-      const constraints: Array<string> = []
 
       if (!checks) return
 
-      for (const check of checks) {
-        const checkParameters = (check as zod.$ZodChecks)._zod.def.check
-        const checkValue = (check._zod.def as unknown as { value: number }).value
+      const constraints: Array<string> = []
 
+      const runChecks = (checkParameters: zod.$ZodChecks['_zod']['def']['check'], checkValue: number) => {
         switch (checkParameters) {
           case 'greater_than': {
             constraints.push(`${name} >= ${checkValue}`)
@@ -82,19 +80,23 @@ export function formatCheckConstraint(name: string, schema: zod.$ZodType) {
         }
       }
 
+      for (const check of checks) {
+        const checkParameters = (check as zod.$ZodChecks)._zod.def.check
+        const checkValue = (check._zod.def as unknown as { value: number }).value
+
+        runChecks(checkParameters, checkValue)
+      }
+
       return constraints.length > 0 ? `CHECK(${constraints.join(' AND ')})` : undefined
     }
 
     case 'string': {
       const checks = definition.checks
-      const constraints: Array<string> = []
-
       if (!checks) return
 
-      for (const check of checks) {
-        const checkParameters = (check as zod.$ZodChecks)._zod.def.check
-        const checkDefinition = check._zod.def as unknown
+      const constraints: Array<string> = []
 
+      const runChecks = (checkParameters: zod.$ZodChecks['_zod']['def']['check'], checkDefinition: unknown) => {
         switch (checkParameters) {
           case 'length_equals': {
             constraints.push(`length(${name}) = ${(checkDefinition as { length: number }).length}`)
@@ -111,6 +113,13 @@ export function formatCheckConstraint(name: string, schema: zod.$ZodType) {
             break
           }
         }
+      }
+
+      for (const check of checks) {
+        const checkParameters = (check as zod.$ZodChecks)._zod.def.check
+        const checkDefinition = check._zod.def as unknown
+
+        runChecks(checkParameters, checkDefinition)
       }
 
       return constraints.length > 0 ? `CHECK(${constraints.join(' AND ')})` : undefined
