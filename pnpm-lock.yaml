@@ -23,7 +23,7 @@ catalogs:
       version: 10.12.0
     relizy:
       specifier: ^1.4.9
-      version: 1.5.0
+      version: 1.7.0
     tsdown:
       specifier: ^0.23.0
       version: 0.23.0
@@ -62,7 +62,7 @@ importers:
         version: 10.12.0(jiti@2.7.0)(supports-color@7.2.0)
       relizy:
         specifier: 'catalog:'
-        version: 1.5.0(@types/node@26.6.4)
+        version: 1.7.0(@types/node@26.6.4)
       tsdown:
         specifier: 'catalog:'
         version: 0.23.0(typescript@6.0.3)
@@ -1911,8 +1911,8 @@ packages:
     resolution: {integrity: sha512-ycwFAS14Jw4mppvmK4GR/J6u3WpWpjkEApehuHtLc/8VpPNpDMbQ4WjqwplXifGeyKOzHSFLmSPqzksDQE2Sfg==}
     hasBin: true
 
-  relizy@1.5.0:
-    resolution: {integrity: sha512-b8pgJeDU0WzZlquMH6h3LSEtxZOVbs41DkdVFEgA+CeOFU7iY4OahN73VZwNu47hcyGfiudYSN/+QJdS19MLMQ==}
+  relizy@1.7.0:
+    resolution: {integrity: sha512-X4VmdtxK2Bz5mCJaJUs8DbScBQyt/rDFU9ABObcS5S66QNVD4erwZbjlNggyeDWcNCRhwqsbM5jTmWV1N4liLg==}
     engines: {node: '>=20.0.0'}
     hasBin: true
     peerDependencies:
@@ -4256,7 +4256,7 @@ snapshots:
     dependencies:
       jsesc: 3.1.0
 
-  relizy@1.5.0(@types/node@26.6.4):
+  relizy@1.7.0(@types/node@26.6.4):
     dependencies:
       '@inquirer/prompts': 8.7.2(@types/node@26.6.4)
       '@maz-ui/node': 5.0.0-beta.26
