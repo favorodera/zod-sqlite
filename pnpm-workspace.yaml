@@ -10,7 +10,7 @@ allowBuilds:
 catalog:
   '@favorodera/eslint-config': ^1.2.0
   '@types/node': ^26.2.0
-  '@vitest/ui': 4.1.11
+  '@vitest/ui': 4.1.12
   db0: ^0.4.0
   eslint: ^10.8.1
   relizy: ^1.4.9
