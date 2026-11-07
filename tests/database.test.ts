@@ -1,5 +1,4 @@
-/* eslint-disable test/require-to-throw-message */
-/* eslint-disable test/no-hooks */
+/* eslint-disable no-await-in-loop, vitest/require-to-throw-message */
 import { createDatabase, type Database } from 'db0'
 import sqlite from 'db0/connectors/node-sqlite'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -33,7 +32,12 @@ describe('database Integration Tests', () => {
     it('creates table with default values', async () => {
       const { table } = createTable({
         columns: [
-          { name: 'id', schema: z.number().default(() => Date.now()) },
+          {
+            name: 'id',
+            schema: z.number().default(() => {
+              return Date.now()
+            }),
+          },
           { name: 'name', schema: z.string().default('Favour Emeka') },
           { name: 'active', schema: z.boolean().default(true) },
         ],

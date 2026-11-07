@@ -1,10 +1,9 @@
 <div align="center">
   <h1>Zod-SQLite</h1>
-  <p><strong>Generate type-safe SQLite table schemas from Zod validation schemas. Define your database structure once using Zod, and automatically generate both SQL CREATE TABLE statements and runtime validation schemas with full TypeScript type inference.</strong></p>
+  <p>Generate type-safe SQLite table schemas from Zod validation schemas. Define your database structure once using Zod, and automatically generate both SQL CREATE TABLE statements and runtime validation schemas with full TypeScript type inference.</p>
   <p>
-    <a href="https://github.com/favorodera/zod-sqlite/blob/main/LICENSE"><img src="https://img.shields.io/github/license/favorodera/zod-sqlite.svg?style=plastic&label=License&color=blue" alt="License"></a>
     <a href="https://github.com/favorodera/zod-sqlite/stargazers"><img src="https://img.shields.io/github/stars/favorodera/zod-sqlite.svg?style=plastic&label=Stars&color=blue" alt="GitHub Stars"></a>
-    <a href="https://npmx.dev/package/zod-sqlite"><img src="https://img.shields.io/npm/dt/zod-sqlite.svg?style=plastic&label=NPM%20Downloads&color=blue" alt="NPM Downloads"></a>
+    <a href="https://npmx.dev/package/zod-sqlite"><img src="https://img.shields.io/npm/dm/zod-sqlite.svg?style=plastic&label=NPM%20Downloads&color=blue" alt="NPM Downloads"></a>
     <a href="https://npmx.dev/package/zod-sqlite"><img src="https://img.shields.io/npm/v/zod-sqlite.svg?style=plastic&label=Version&color=blue" alt="NPM Version"></a>
   </p>
 </div>
@@ -76,13 +75,15 @@ const users = createTable({
 
 // Use the generated SQL
 console.log(users.table)
-// CREATE TABLE users (
-//   id INTEGER NOT NULL,
-//   email TEXT NOT NULL,
-//   username TEXT NOT NULL CHECK(length(username) >= 3 AND length(username) <= 20),
-//   created_at DATE NOT NULL DEFAULT '2026-01-06T...',
-//   PRIMARY KEY (id)
-// );
+/*
+ * CREATE TABLE users (
+ *   id INTEGER NOT NULL,
+ *   email TEXT NOT NULL,
+ *   username TEXT NOT NULL CHECK(length(username) >= 3 AND length(username) <= 20),
+ *   created_at DATE NOT NULL DEFAULT '2026-01-06T...',
+ *   PRIMARY KEY (id)
+ * );
+ */
 
 console.log(users.indexes[0])
 // CREATE UNIQUE INDEX idx_users_email ON users (email);
@@ -170,10 +171,10 @@ Configuration object for table creation.
 
 ```typescript
 interface TableConfig {
-  columns: Array<ColumnConfig> // Array of column definitions
-  indexes?: Array<IndexConfig> // Optional index configurations
+  columns: ColumnConfig[] // Array of column definitions
+  indexes?: IndexConfig[] // Optional index configurations
   name: string // Table name
-  primaryKeys: Array<string> // Column names forming primary key
+  primaryKeys: string[] // Column names forming primary key
 }
 ```
 
@@ -195,19 +196,19 @@ interface ColumnConfig {
 Foreign key constraint configuration.
 
 ```typescript
-interface ForeignKeyReference {
-  column: string // Referenced column name
-  onDelete?: ForeignKeyAction // Action on parent deletion
-  onUpdate?: ForeignKeyAction // Action on parent update
-  table: string // Referenced table name
-}
-
 type ForeignKeyAction
   = | 'CASCADE'
     | 'NO ACTION'
     | 'RESTRICT'
     | 'SET DEFAULT'
     | 'SET NULL'
+
+interface ForeignKeyReference {
+  column: string // Referenced column name
+  onDelete?: ForeignKeyAction // Action on parent deletion
+  onUpdate?: ForeignKeyAction // Action on parent update
+  table: string // Referenced table name
+}
 ```
 
 ### IndexConfig
@@ -216,7 +217,7 @@ Index configuration for query optimization.
 
 ```typescript
 interface IndexConfig {
-  columns: Array<string> // Indexed column names
+  columns: string[] // Indexed column names
   name: string // Index name
   unique?: boolean // Whether this is a unique index
   where?: string // Optional WHERE clause for partial index
@@ -949,8 +950,10 @@ const tags = JSON.parse(result.tags) // ['tech', 'news']
 
 **Recommendation:** For better queryability, consider separate tables for array data:
 ```typescript
-// Instead of storing tags as JSON array
-// Use a junction table: post_tags (post_id, tag_id)
+/*
+ * Instead of storing tags as JSON array
+ * Use a junction table: post_tags (post_id, tag_id)
+ */
 ```
 
 ### Date Handling

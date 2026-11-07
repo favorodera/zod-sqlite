@@ -16,11 +16,13 @@ import { buildZodSchema } from './zod-schema'
  * @param config Table configuration object
  * @returns Object containing SQL statements and Zod schema
  */
-export function createTable<const TColumns extends ReadonlyArray<ColumnConfig<any, any>>>(config: TableConfig<TColumns>) {
+export function createTable<const TColumns extends readonly ColumnConfig<any, any>[]>(config: TableConfig<TColumns>) {
   const { columns, indexes, name, primaryKeys } = config
 
   // Build column definitions
-  const columnDefs = columns.map(column => buildColumnDefinition(column))
+  const columnDefs = columns.map((column) => {
+    return buildColumnDefinition(column)
+  })
 
   // Build primary key constraint
   const primaryKeyConstraint = buildPrimaryKeyConstraint(primaryKeys)

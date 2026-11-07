@@ -11,7 +11,7 @@ import type { ColumnConfig } from './types'
  * @param columns Array of column configurations
  * @returns Zod object schema
  */
-export function buildZodSchema<TColumns extends ReadonlyArray<ColumnConfig<string, zod.$ZodType>>>(columns: TColumns) {
+export function buildZodSchema<TColumns extends readonly ColumnConfig<string, zod.$ZodType>[]>(columns: TColumns) {
   const schemaShape: Record<string, zod.$ZodType> = {}
 
   for (const column of columns) {

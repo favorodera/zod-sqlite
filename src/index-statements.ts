@@ -8,7 +8,7 @@ import type { TableConfig } from './types'
  * @param indexes Array of index configurations
  * @returns Array of CREATE INDEX SQL statements
  */
-export function buildIndexStatements(tableName: string, indexes?: TableConfig['indexes']): Array<string> {
+export function buildIndexStatements(tableName: string, indexes?: TableConfig['indexes']): string[] {
   if (!indexes || indexes.length === 0) return []
 
   return indexes.map((index) => {

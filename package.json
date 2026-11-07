@@ -29,13 +29,14 @@
     ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
   "engines": {
-    "node": ">=22.0.0",
-    "pnpm": ">=11.0.0"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "build": "tsdown",
@@ -44,7 +45,8 @@
     "test:watch": "vitest --watch --ui",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm build",
-    "lint": "eslint . --fix",
+    "lint:fix": "eslint . --fix",
+    "lint": "eslint .",
     "ready": "pnpm install && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
@@ -56,6 +58,7 @@
     "@vitest/ui": "catalog:",
     "db0": "catalog:",
     "eslint": "catalog:",
+    "pkg-pr-new": "catalog:",
     "relizy": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",

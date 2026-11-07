@@ -14,7 +14,7 @@ export function buildColumnDefinition(column: TableConfig['columns'][number]): s
   const { name, references, schema, unique } = column
   const { defaultValue, nullable, SQLiteType } = zodToSQLite(schema)
 
-  const parts: Array<string> = [
+  const parts: string[] = [
     name,
     SQLiteType,
   ]

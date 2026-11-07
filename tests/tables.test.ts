@@ -38,9 +38,7 @@ describe('table Generation', () => {
     expect(table).toContain('name TEXT NOT NULL CHECK(length(name) >= 3)')
     expect(table).toContain('price REAL NOT NULL CHECK(price >= 0)')
     expect(table).toContain('active BOOLEAN NOT NULL DEFAULT 1')
-    // eslint-disable-next-line test/max-expects
     expect(table).toContain('tags TEXT NOT NULL UNIQUE')
-    // eslint-disable-next-line test/max-expects
     expect(table).toContain('PRIMARY KEY (id)')
   })
 
