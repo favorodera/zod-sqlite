@@ -1,5 +1,27 @@
 # zod-sqlite
 
+## v1.0.4...v1.0.5
+
+[compare changes](https://github.com/favorodera/zod-sqlite/compare/v1.0.4...v1.0.5)
+
+### Chores
+
+- **github:** Fix issue template contact links ([c605bb7](https://github.com/favorodera/zod-sqlite/commit/c605bb7))
+
+  - Correct repository URLs in issue template config
+
+- **config:** Update workspace and pnpm catalog ([d05ee15](https://github.com/favorodera/zod-sqlite/commit/d05ee15))
+
+  - simplify pnpm catalog configuration
+  - add recommended VS Code settings and extensions
+  - refactor check constraint formatter helpers
+  - update internal variable names and lint rules
+
+### ❤️ Contributors
+
+- Favour Emeka ([@favorodera](https://github.com/favorodera))
+
+
 ## v1.0.3...v1.0.4
 
 [compare changes](https://github.com/favorodera/zod-sqlite/compare/v1.0.3...v1.0.4)
