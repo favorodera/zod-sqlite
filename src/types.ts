@@ -1,23 +1,138 @@
 import type * as zod from 'zod/v4/core'
 
 /**
- * SQLite native column types.
+ * Database column configuration.
  *
- * SQLite uses a dynamic type system with these five storage classes.
- * Column values are stored in one of these formats, and SQLite performs
- * type conversions as needed during operations.
- * @see https://www.sqlite.org/datatype3.html#storage_classes_and_datatypes
+ * Defines a single column in a table, including its name, type (via Zod schema),
+ * validation rules, and optional constraints like uniqueness and foreign keys.
+ *
+ * **Column definition workflow:**
+ * 1. Zod schema is analyzed to determine SQLite type (TEXT, INTEGER, etc.)
+ * 2. Zod schema provides TypeScript type safety and runtime validation
+ * 3. Constraints (unique, foreign key) are applied at the database level
+ * @template TName - Literal string type for the column name
+ * @template TSchema - Zod type for the column schema
+ * @example
+ * ```ts
+ * // Simple text column
+ * {
+ *   name: 'email',
+ *   schema: z.email()
+ * }
+ *
+ * // Unique column with validation
+ * {
+ *   name: 'username',
+ *   schema: z.string().min(3).max(20),
+ *   unique: true
+ * }
+ *
+ * // Foreign key column
+ * {
+ *   name: 'author_id',
+ *   schema: z.int(),
+ *   references: {
+ *     table: 'users',
+ *     column: 'id',
+ *     onDelete: 'CASCADE'
+ *   }
+ * }
+ *
+ * // Optional column with default
+ * {
+ *   name: 'status',
+ *   schema: z.enum(['draft', 'published']).default('draft')
+ * }
+ * ```
  */
-export type SQLiteType = 'BLOB' | 'INTEGER' | 'NULL' | 'REAL' | 'TEXT'
+export interface ColumnConfig<TName extends string = string, TSchema extends zod.$ZodType = zod.$ZodType> {
+  /**
+   * Name of the column.
+   *
+   * Used in CREATE TABLE statement and all SQL queries.
+   * Should use snake_case by convention.
+   * @example 'user_id'
+   * @example 'created_at'
+   */
+  name: TName
 
-/**
- * SQLite supported column types.
- *
- * These types are supported by SQLite but not as native storage classes.
- * They are often used as aliases for other types or for specific purposes.
- * @see https://www.sqlite.org/datatype3.html#type_affinity
- */
-export type SQLiteSupportType = 'BIGINT' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'FLOAT' | 'NUMERIC'
+  /**
+   * Foreign key reference configuration.
+   *
+   * Creates a constraint linking this column to a column in another table.
+   * Ensures referential integrity by preventing orphaned records.
+   *
+   * **Requirements:**
+   * - Referenced column should typically be a PRIMARY KEY or UNIQUE
+   * - Types must be compatible between the two columns
+   * - Foreign keys must be enabled: `PRAGMA foreign_keys = ON`
+   *
+   * **Composite foreign keys** (multiple columns referencing multiple columns)
+   * cannot be defined here - they must be defined at the table level as a
+   * separate constraint.
+   * @example
+   * ```ts
+   * {
+   *   name: 'user_id',
+   *   schema: z.int(),
+   *   references: {
+   *     table: 'users',
+   *     column: 'id',
+   *     onDelete: 'CASCADE'
+   *   }
+   * }
+   * ```
+   */
+  references?: ForeignKeyReference
+
+  /**
+   * Zod schema defining the column's type, validation, and constraints.
+   *
+   * The Zod schema serves dual purposes:
+   * 1. **Database level**: Mapped to SQLite type (TEXT, INTEGER, REAL, BLOB, NULL)
+   * 2. **Application level**: Provides TypeScript types and runtime validation
+   *
+   * **Zod to SQLite type mapping:**
+   * - `z.string()`, `z.enum()`, `z.literal()`, `z.date()` → TEXT
+   * - `z.number()` → REAL (or INTEGER if `.int()` is used)
+   * - `z.bigint()`, `z.boolean()` → INTEGER
+   * - `z.custom()` for file/blob → BLOB
+   * - `z.null()`, `z.undefined()` → NULL
+   *
+   * **Zod features mapped to SQL:**
+   * - `.optional()`, `.nullable()` → column allows NULL
+   * - `.default(value)` → DEFAULT clause in SQL
+   * - `.min()`, `.max()`, `.email()`, etc. → runtime validation only
+   * @example z.string() - TEXT column
+   * @example z.int() - INTEGER column
+   * @example z.string().nullable() - TEXT column that allows NULL
+   * @example z.boolean().default(false) - INTEGER with DEFAULT 0
+   */
+  schema: TSchema
+
+  /**
+   * Whether column values must be unique across all rows.
+   *
+   * When true, adds a UNIQUE constraint to the column. Any attempt to
+   * INSERT or UPDATE a duplicate value will fail.
+   *
+   * **Note**: This is different from PRIMARY KEY:
+   * - UNIQUE columns can be NULL (unless also NOT NULL)
+   * - A table can have multiple UNIQUE columns
+   * - PRIMARY KEY implies UNIQUE + NOT NULL
+   * @default false
+   * @example
+   * ```ts
+   * // Unique email address
+   * {
+   *   name: 'email',
+   *   schema: z.email(),
+   *   unique: true
+   * }
+   * ```
+   */
+  unique?: boolean
+}
 
 /**
  * Foreign key constraint actions for ON DELETE and ON UPDATE clauses.
@@ -90,13 +205,6 @@ export type ForeignKeyAction
  */
 export interface ForeignKeyReference {
   /**
-   * Name of the referenced table.
-   *
-   * This is the parent table that contains the column being referenced.
-   */
-  table: string
-
-  /**
    * Name of the referenced column in the parent table.
    *
    * This column should typically be a PRIMARY KEY or have a UNIQUE constraint
@@ -120,6 +228,13 @@ export interface ForeignKeyReference {
    * @default 'NO ACTION'
    */
   onUpdate?: ForeignKeyAction
+
+  /**
+   * Name of the referenced table.
+   *
+   * This is the parent table that contains the column being referenced.
+   */
+  table: string
 }
 
 /**
@@ -164,7 +279,17 @@ export interface ForeignKeyReference {
  * }
  * ```
  */
-export interface IndexConfig<TColumns extends ReadonlyArray<ColumnConfig<string, zod.$ZodType>> = ReadonlyArray<ColumnConfig<string, zod.$ZodType>>> {
+export interface IndexConfig<TColumns extends readonly ColumnConfig<string, zod.$ZodType>[] = readonly ColumnConfig<string, zod.$ZodType>[]> {
+  /**
+   * Column names to include in the index.
+   *
+   * For composite indexes, the order matters: queries that filter on the
+   * first columns benefit most from the index.
+   * @example ['email'] - single column
+   * @example ['last_name', 'first_name'] - composite index
+   */
+  columns: readonly TColumns[number]['name'][]
+
   /**
    * Unique name for the index.
    *
@@ -174,16 +299,6 @@ export interface IndexConfig<TColumns extends ReadonlyArray<ColumnConfig<string,
    * @example 'idx_posts_author_created'
    */
   name: string
-
-  /**
-   * Column names to include in the index.
-   *
-   * For composite indexes, the order matters: queries that filter on the
-   * first columns benefit most from the index.
-   * @example ['email'] - single column
-   * @example ['last_name', 'first_name'] - composite index
-   */
-  columns: ReadonlyArray<TColumns[number]['name']>
 
   /**
    * Whether this is a unique index.
@@ -211,160 +326,29 @@ export interface IndexConfig<TColumns extends ReadonlyArray<ColumnConfig<string,
 }
 
 /**
- * Database column configuration.
+ * SQLite supported column types.
  *
- * Defines a single column in a table, including its name, type (via Zod schema),
- * validation rules, and optional constraints like uniqueness and foreign keys.
- *
- * **Column definition workflow:**
- * 1. Zod schema is analyzed to determine SQLite type (TEXT, INTEGER, etc.)
- * 2. Zod schema provides TypeScript type safety and runtime validation
- * 3. Constraints (unique, foreign key) are applied at the database level
- * @template TName - Literal string type for the column name
- * @template TSchema - Zod type for the column schema
- * @example
- * ```ts
- * // Simple text column
- * {
- *   name: 'email',
- *   schema: z.email()
- * }
- *
- * // Unique column with validation
- * {
- *   name: 'username',
- *   schema: z.string().min(3).max(20),
- *   unique: true
- * }
- *
- * // Foreign key column
- * {
- *   name: 'author_id',
- *   schema: z.int(),
- *   references: {
- *     table: 'users',
- *     column: 'id',
- *     onDelete: 'CASCADE'
- *   }
- * }
- *
- * // Optional column with default
- * {
- *   name: 'status',
- *   schema: z.enum(['draft', 'published']).default('draft')
- * }
- * ```
+ * These types are supported by SQLite but not as native storage classes.
+ * They are often used as aliases for other types or for specific purposes.
+ * @see https://www.sqlite.org/datatype3.html#type_affinity
  */
-export interface ColumnConfig<TName extends string = string, TSchema extends zod.$ZodType = zod.$ZodType> {
-  /**
-   * Name of the column.
-   *
-   * Used in CREATE TABLE statement and all SQL queries.
-   * Should use snake_case by convention.
-   * @example 'user_id'
-   * @example 'created_at'
-   */
-  name: TName
+export type SQLiteSupportType = 'BIGINT' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'FLOAT' | 'NUMERIC'
 
-  /**
-   * Zod schema defining the column's type, validation, and constraints.
-   *
-   * The Zod schema serves dual purposes:
-   * 1. **Database level**: Mapped to SQLite type (TEXT, INTEGER, REAL, BLOB, NULL)
-   * 2. **Application level**: Provides TypeScript types and runtime validation
-   *
-   * **Zod to SQLite type mapping:**
-   * - `z.string()`, `z.enum()`, `z.literal()`, `z.date()` → TEXT
-   * - `z.number()` → REAL (or INTEGER if `.int()` is used)
-   * - `z.bigint()`, `z.boolean()` → INTEGER
-   * - `z.custom()` for file/blob → BLOB
-   * - `z.null()`, `z.undefined()` → NULL
-   *
-   * **Zod features mapped to SQL:**
-   * - `.optional()`, `.nullable()` → column allows NULL
-   * - `.default(value)` → DEFAULT clause in SQL
-   * - `.min()`, `.max()`, `.email()`, etc. → runtime validation only
-   * @example z.string() - TEXT column
-   * @example z.int() - INTEGER column
-   * @example z.string().nullable() - TEXT column that allows NULL
-   * @example z.boolean().default(false) - INTEGER with DEFAULT 0
-   */
-  schema: TSchema
-
-  /**
-   * Whether column values must be unique across all rows.
-   *
-   * When true, adds a UNIQUE constraint to the column. Any attempt to
-   * INSERT or UPDATE a duplicate value will fail.
-   *
-   * **Note**: This is different from PRIMARY KEY:
-   * - UNIQUE columns can be NULL (unless also NOT NULL)
-   * - A table can have multiple UNIQUE columns
-   * - PRIMARY KEY implies UNIQUE + NOT NULL
-   * @default false
-   * @example
-   * ```ts
-   * // Unique email address
-   * {
-   *   name: 'email',
-   *   schema: z.email(),
-   *   unique: true
-   * }
-   * ```
-   */
-  unique?: boolean
-
-  /**
-   * Foreign key reference configuration.
-   *
-   * Creates a constraint linking this column to a column in another table.
-   * Ensures referential integrity by preventing orphaned records.
-   *
-   * **Requirements:**
-   * - Referenced column should typically be a PRIMARY KEY or UNIQUE
-   * - Types must be compatible between the two columns
-   * - Foreign keys must be enabled: `PRAGMA foreign_keys = ON`
-   *
-   * **Composite foreign keys** (multiple columns referencing multiple columns)
-   * cannot be defined here - they must be defined at the table level as a
-   * separate constraint.
-   * @example
-   * ```ts
-   * {
-   *   name: 'user_id',
-   *   schema: z.int(),
-   *   references: {
-   *     table: 'users',
-   *     column: 'id',
-   *     onDelete: 'CASCADE'
-   *   }
-   * }
-   * ```
-   */
-  references?: ForeignKeyReference
-}
+/**
+ * SQLite native column types.
+ *
+ * SQLite uses a dynamic type system with these five storage classes.
+ * Column values are stored in one of these formats, and SQLite performs
+ * type conversions as needed during operations.
+ * @see https://www.sqlite.org/datatype3.html#storage_classes_and_datatypes
+ */
+export type SQLiteType = 'BLOB' | 'INTEGER' | 'NULL' | 'REAL' | 'TEXT'
 
 /**
  * Complete database table configuration.
  * @template TColumns - An array of column configuration objects.
  */
-export interface TableConfig<TColumns extends ReadonlyArray<ColumnConfig<string, zod.$ZodType>> = ReadonlyArray<ColumnConfig<string, zod.$ZodType>>> {
-  /**
-   * Name of the table.
-   *
-   * Used in CREATE TABLE statement and all SQL queries.
-   * Should use snake_case by convention (e.g., 'user_profiles', 'order_items').
-   *
-   * **Naming conventions:**
-   * - Use plural nouns for tables representing collections (e.g., 'users', 'posts')
-   * - Use singular nouns for junction tables (e.g., 'user_role', 'post_tag')
-   * - Avoid SQL reserved keywords (e.g., 'order' → 'orders' or 'user_order')
-   * @example 'users'
-   * @example 'blog_posts'
-   * @example 'user_sessions'
-   */
-  name: string
-
+export interface TableConfig<TColumns extends readonly ColumnConfig<string, zod.$ZodType>[] = readonly ColumnConfig<string, zod.$ZodType>[]> {
   /**
    * Array of column configurations defining the table structure.
    *
@@ -387,36 +371,6 @@ export interface TableConfig<TColumns extends ReadonlyArray<ColumnConfig<string,
    * ```
    */
   columns: TColumns
-
-  /**
-   * Column name(s) that form the primary key.
-   *
-   * The primary key uniquely identifies each row in the table and cannot
-   * contain NULL values. Always provided as an array, even for single-column
-   * primary keys.
-   *
-   * **Single column primary key:**
-   * - Use an array with one element (e.g., `['id']`)
-   * - Typically an auto-incrementing integer
-   * - Most common pattern for standard entity tables
-   *
-   * **Composite primary key:**
-   * - Use an array with multiple elements (e.g., `['user_id', 'post_id']`)
-   * - Common in junction tables for many-to-many relationships
-   * - Order matters: most specific/selective column should come first
-   * - The combination of all columns must be unique
-   *
-   * **Notes:**
-   * - Every table should have a primary key
-   * - Primary key columns are automatically indexed by SQLite
-   * - Primary key implies UNIQUE + NOT NULL constraints on all columns
-   * - Cannot be changed after table creation (requires table rebuild)
-   * @example ['id'] - single column primary key
-   * @example ['user_id', 'role_id'] - composite primary key for junction table
-   * @example ['tenant_id', 'record_id'] - composite key for multi-tenant data
-   * @example ['country_code', 'postal_code'] - composite key for location data
-   */
-  primaryKeys: ReadonlyArray<TColumns[number]['name']>
 
   /**
    * Optional array of index configurations for query optimization.
@@ -456,5 +410,51 @@ export interface TableConfig<TColumns extends ReadonlyArray<ColumnConfig<string,
    * ]
    * ```
    */
-  indexes?: Array<IndexConfig<TColumns>>
+  indexes?: IndexConfig<TColumns>[]
+
+  /**
+   * Name of the table.
+   *
+   * Used in CREATE TABLE statement and all SQL queries.
+   * Should use snake_case by convention (e.g., 'user_profiles', 'order_items').
+   *
+   * **Naming conventions:**
+   * - Use plural nouns for tables representing collections (e.g., 'users', 'posts')
+   * - Use singular nouns for junction tables (e.g., 'user_role', 'post_tag')
+   * - Avoid SQL reserved keywords (e.g., 'order' → 'orders' or 'user_order')
+   * @example 'users'
+   * @example 'blog_posts'
+   * @example 'user_sessions'
+   */
+  name: string
+
+  /**
+   * Column name(s) that form the primary key.
+   *
+   * The primary key uniquely identifies each row in the table and cannot
+   * contain NULL values. Always provided as an array, even for single-column
+   * primary keys.
+   *
+   * **Single column primary key:**
+   * - Use an array with one element (e.g., `['id']`)
+   * - Typically an auto-incrementing integer
+   * - Most common pattern for standard entity tables
+   *
+   * **Composite primary key:**
+   * - Use an array with multiple elements (e.g., `['user_id', 'post_id']`)
+   * - Common in junction tables for many-to-many relationships
+   * - Order matters: most specific/selective column should come first
+   * - The combination of all columns must be unique
+   *
+   * **Notes:**
+   * - Every table should have a primary key
+   * - Primary key columns are automatically indexed by SQLite
+   * - Primary key implies UNIQUE + NOT NULL constraints on all columns
+   * - Cannot be changed after table creation (requires table rebuild)
+   * @example ['id'] - single column primary key
+   * @example ['user_id', 'role_id'] - composite primary key for junction table
+   * @example ['tenant_id', 'record_id'] - composite key for multi-tenant data
+   * @example ['country_code', 'postal_code'] - composite key for location data
+   */
+  primaryKeys: readonly TColumns[number]['name'][]
 }

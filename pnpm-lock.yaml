@@ -179,6 +179,9 @@ catalogs:
     eslint:
       specifier: ^10.8.1
       version: 10.13.0
+    pkg-pr-new:
+      specifier: ^0.0.93
+      version: 0.0.93
     relizy:
       specifier: ^1.4.9
       version: 1.12.0
@@ -218,6 +221,9 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 10.13.0(jiti@2.7.0)(supports-color@7.2.0)
+      pkg-pr-new:
+        specifier: 'catalog:'
+        version: 0.0.93
       relizy:
         specifier: 'catalog:'
         version: 1.12.0(@types/node@26.6.6)(supports-color@7.2.0)
@@ -2116,6 +2122,10 @@ packages:
   picomatch@4.0.7:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
+
+  pkg-pr-new@0.0.93:
+    resolution: {integrity: sha512-JH3HEO+m8sNFpalNAeGrNKjdwxNcXT3yuEuGMU/65dvLojPo+Ofnmc8la2v2ceisjXTOKQw/738Pj4KNFY7F+w==}
+    hasBin: true
 
   pkg-types@2.3.3:
     resolution: {integrity: sha512-j/lCFdcppV0JxWpCEITdbDltBxPP6cHT+yNJ6Go2OgoSA9518X847X9z0p6LtA4Nc16+eQzCZjRrWanTGvHJ5w==}
@@ -4606,6 +4616,8 @@ snapshots:
   picomatch@2.3.2: {}
 
   picomatch@4.0.7: {}
+
+  pkg-pr-new@0.0.93: {}
 
   pkg-types@2.3.3:
     dependencies:

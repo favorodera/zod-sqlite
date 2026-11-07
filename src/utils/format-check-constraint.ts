@@ -33,7 +33,9 @@ export function formatCheckConstraint(name: string, schema: zod.$ZodType) {
     case 'enum': {
       const entries = definition.entries
       const values = Object.values(entries)
-      const quotedValues = values.map(value => `'${String(value).replaceAll('\'', '\'\'')}'`).join(', ')
+      const quotedValues = values.map((value) => {
+        return `'${String(value).replaceAll('\'', '\'\'')}'`
+      }).join(', ')
       return `CHECK(${name} IN (${quotedValues}))`
     }
 
@@ -64,7 +66,7 @@ export function formatCheckConstraint(name: string, schema: zod.$ZodType) {
 
       if (!checks) return
 
-      const constraints: Array<string> = []
+      const constraints: string[] = []
 
       const runChecks = (checkParameters: zod.$ZodChecks['_zod']['def']['check'], checkValue: number) => {
         switch (checkParameters) {
@@ -94,7 +96,7 @@ export function formatCheckConstraint(name: string, schema: zod.$ZodType) {
       const checks = definition.checks
       if (!checks) return
 
-      const constraints: Array<string> = []
+      const constraints: string[] = []
 
       const runChecks = (checkParameters: zod.$ZodChecks['_zod']['def']['check'], checkDefinition: unknown) => {
         switch (checkParameters) {
@@ -127,11 +129,13 @@ export function formatCheckConstraint(name: string, schema: zod.$ZodType) {
 
     case 'union': {
       const options = definition.options
-      const allAreLiterals = options.every(option => option._zod.def.type === 'literal')
+      const allAreLiterals = options.every((option) => {
+        return option._zod.def.type === 'literal'
+      })
 
       if (!allAreLiterals) return
 
-      const values: Array<unknown> = []
+      const values: unknown[] = []
 
       for (const option of options) {
         values.push(...(option as zod.$ZodLiteral)._zod.def.values)

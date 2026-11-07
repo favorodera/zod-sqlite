@@ -1,12 +1,16 @@
-import { factory } from '@favorodera/eslint-config'
+import { defineConfig } from '@favorodera/eslint-config'
 
-export default factory({
+export default defineConfig({
   tailwind: false,
+  typescript: {
+    overrides: {
+      'typescript/no-explicit-any': 'off',
+    },
+  },
 })
-  .overrides({
-    'favorodera/typescript/rules': {
-      rules: {
-        'ts/no-explicit-any': 'off',
-      },
+  .append({
+    files: ['package.json'],
+    rules: {
+      'jsonc/array-bracket-newline': 'off',
     },
   })
